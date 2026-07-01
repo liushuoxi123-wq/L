@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>X</title>
+  <title>L</title>
   <style>
     :root {
       --bg: #000;
@@ -213,6 +213,21 @@
 
     .name { font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .verified { color: var(--accent); font-size: 14px; }
+    .demo-badge {
+      display: inline-grid;
+      place-items: center;
+      min-width: 34px;
+      height: 18px;
+      padding: 0 6px;
+      border: 1px solid rgba(113, 118, 123, .7);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      vertical-align: middle;
+      text-transform: uppercase;
+    }
     .handle, .time, .muted { color: var(--muted); }
     .tweet-text {
       margin: 3px 0 10px;
@@ -524,6 +539,7 @@
       padding: 48px 12px;
     }
     .modal.open { display: grid; place-items: start center; }
+    .modal.centered.open { place-items: center; }
     #actionSheetModal.open { place-items: end center; padding: 0; }
     .dialog {
       width: min(430px, 100%);
@@ -541,6 +557,41 @@
     }
     .close { border: 0; background: transparent; color: var(--text); font-size: 28px; }
     .dialog-body { padding: 0 12px 14px; }
+    .disclaimer-dialog {
+      width: min(392px, calc(100vw - 28px));
+      border: 1px solid rgba(83, 100, 113, .55);
+      background:
+        radial-gradient(circle at top right, rgba(29,155,240,.16), transparent 34%),
+        var(--bg);
+    }
+    .disclaimer-body {
+      display: grid;
+      gap: 14px;
+      padding: 6px 18px 18px;
+      color: #d7dbdc;
+      line-height: 1.45;
+      font-size: 15px;
+    }
+    .disclaimer-body h2 {
+      margin: 0;
+      color: var(--text);
+      font-size: 28px;
+      line-height: 1.1;
+    }
+    .disclaimer-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .secondary-btn {
+      border: 1px solid #536471;
+      background: transparent;
+      color: var(--text);
+      border-radius: 999px;
+      min-height: 42px;
+      font-weight: 900;
+    }
     .dialog textarea {
       width: 100%;
       min-height: 150px;
@@ -686,6 +737,45 @@
       padding: 10px;
       color: var(--muted);
       font-size: 13px;
+    }
+    .site-footer {
+      padding: 22px 18px 26px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+      line-height: 1.4;
+      text-align: center;
+    }
+    .site-footer button {
+      display: inline;
+      border: 0;
+      background: transparent;
+      color: var(--accent);
+      padding: 0;
+      font-weight: 800;
+    }
+    .about-page {
+      padding: 28px 22px 110px;
+      display: grid;
+      gap: 18px;
+    }
+    .about-page h1 {
+      margin: 0;
+      font-size: 36px;
+      line-height: 1.05;
+    }
+    .about-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--soft);
+      padding: 18px;
+      color: #d7dbdc;
+      line-height: 1.5;
+    }
+    .about-card h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      color: var(--text);
     }
 
     .top-avatar {
@@ -1113,6 +1203,7 @@
           </div>
         </section>
         <div id="homeFeed"></div>
+        <div class="site-footer">This is an independent demo project. All content is fictional and for demonstration purposes only. <button data-about-link>About L</button></div>
       </section>
 
       <section class="view" id="threadView"></section>
@@ -1122,6 +1213,7 @@
           <label class="search">⌕ <input id="messageSearch" placeholder="Search Direct Messages"></label>
         </div>
         <div id="messageList"></div>
+        <div class="site-footer">This is an independent demo project. All content is fictional and for demonstration purposes only. <button data-about-link>About L</button></div>
       </section>
 
       <section class="view" id="exploreView">
@@ -1142,6 +1234,7 @@
           <button class="tab" data-search-tab="media">媒体</button>
         </div>
         <div id="exploreContent"></div>
+        <div class="site-footer">This is an independent demo project. All content is fictional and for demonstration purposes only. <button data-about-link>About L</button></div>
       </section>
 
       <section class="view" id="notificationsView">
@@ -1150,6 +1243,7 @@
           <button class="tab" data-notif-tab="mentions">提及</button>
         </div>
         <div id="notificationsList"></div>
+        <div class="site-footer">This is an independent demo project. All content is fictional and for demonstration purposes only. <button data-about-link>About L</button></div>
       </section>
 
       <section class="view" id="profileView">
@@ -1164,6 +1258,30 @@
           <input id="grokInput" placeholder="Ask Grok">
           <button class="post-btn" id="grokSend">Send</button>
         </div>
+        <div class="site-footer">This is an independent demo project. All content is fictional and for demonstration purposes only. <button data-about-link>About L</button></div>
+      </section>
+
+      <section class="view" id="aboutView">
+        <div class="about-page">
+          <div>
+            <span class="demo-badge">Demo</span>
+            <h1>About L</h1>
+          </div>
+          <div class="about-card">
+            <h2>Independent Learning Project</h2>
+            <p>L is a fan-made social media UI project built for learning web development, product design, and software engineering. It is a static, single-player demonstration that uses fictional data and local browser storage.</p>
+          </div>
+          <div class="about-card">
+            <h2>No Affiliation</h2>
+            <p>L is not affiliated with, endorsed by, or connected to X, xAI, OpenAI, SpaceX, Tesla, or any other real company, organization, or public figure.</p>
+          </div>
+          <div class="about-card">
+            <h2>Simulated Content</h2>
+            <p>All names, usernames, profiles, posts, comments, avatars, logos, and events displayed here are fictional, simulated, or used only to demonstrate UI and UX patterns.</p>
+          </div>
+          <button class="pill-btn filled" data-view-jump="homeView">Enter L</button>
+        </div>
+        <div class="site-footer">This is an independent demo project. All content is fictional and for demonstration purposes only.</div>
       </section>
     </main>
 
@@ -1251,6 +1369,24 @@
     </section>
   </div>
 
+  <div class="modal centered no-dismiss" id="disclaimerModal" aria-modal="true" role="dialog">
+    <section class="dialog disclaimer-dialog">
+      <div class="disclaimer-body">
+        <h2>Welcome to L</h2>
+        <div id="disclaimerText">
+          <p>L is a personal educational and demonstration project.</p>
+          <p>This website is not affiliated with, endorsed by, or connected to X, xAI, OpenAI, SpaceX, Tesla, or any other real company, organization, or public figure.</p>
+          <p>All names, usernames, profiles, posts, comments, avatars, logos, and events displayed on this website are fictional, simulated, or used only for UI/UX demonstration.</p>
+          <p>This website is intended solely for learning, design, and software development purposes.</p>
+        </div>
+        <div class="disclaimer-actions">
+          <button class="post-btn" id="enterL">Enter L</button>
+          <button class="secondary-btn" id="learnMoreL">Learn More</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <div class="drawer" id="sideDrawer">
     <aside class="drawer-panel" id="drawerPanel"></aside>
   </div>
@@ -1259,6 +1395,7 @@
 
   <script>
     const STORE = "mirror-x-mobile-v3";
+    const DISCLAIMER_KEY = "l-disclaimer-accepted-v1";
     const now = Date.now();
     const img = {
       me: "assets/mask-reference.png",
@@ -1388,6 +1525,9 @@
       return `<div class="avatar ${cls}" style="background:${esc(acct.color || "linear-gradient(135deg,#1d9bf0,#7856ff)")};">${esc(acct.initial || acct.name.slice(0, 1))}</div>`;
     }
     function badge(acct) { return `${acct.verified ? `<span class="verified">✓</span>` : ""}${acct.xBadge ? ` <span class="badge-x">X</span>` : ""}`; }
+    function demoBadge() { return `<span class="demo-badge">Demo</span>`; }
+    function displayName(acct, attrs = "") { return `<span class="name" ${attrs}>${esc(acct.name)}</span> ${demoBadge()} ${badge(acct)}`; }
+    function siteFooter() { return `<div class="site-footer">This is an independent demo project. All content is fictional and for demonstration purposes only. <button data-about-link>About L</button></div>`; }
     function mediaHtml(p) {
       const image = p.image ? `<div class="media"><img src="${esc(p.image)}" alt=""></div>` : "";
       const video = p.video ? `<div class="media"><div class="media-fake">▶ VIDEO<br>${esc(p.video)}</div></div>` : "";
@@ -1419,7 +1559,7 @@
       const q = state.posts.find(x => x.id === p.quoteId);
       if (!q) return "";
       const a = account(q.authorId);
-      return `<div class="quote"><strong>${esc(a.name)}</strong> <span class="handle">${esc(a.handle)}</span><div>${esc(q.text)}</div></div>`;
+      return `<div class="quote"><strong>${esc(a.name)}</strong> ${demoBadge()} <span class="handle">${esc(a.handle)}</span><div>${esc(q.text)}</div></div>`;
     }
     function actionHtml(p) {
       const liked = state.likes[p.id]?.includes("me");
@@ -1443,7 +1583,7 @@
         ${avatar(a)}
         <div>
           <div class="tweet-head">
-            <span class="name" data-profile-open="${esc(a.id)}">${esc(a.name)}</span>${badge(a)}
+            ${displayName(a, `data-profile-open="${esc(a.id)}"`)}
             <span class="handle">${esc(a.handle)}</span><span class="time">· ${rel(p.createdAt)}</span>
             <button class="tweet-menu" data-menu="${esc(p.id)}">•••</button>
           </div>
@@ -1490,7 +1630,7 @@
           <div class="profile-buttons">${own ? `<button class="pill-btn" id="editProfile">Edit profile</button>` : `<button class="pill-btn">Subscribe</button><button class="pill-btn filled" data-follow="${esc(id)}">${isFollowing(id) ? "Following" : "Follow"}</button>`}</div>
         </div>
         <div class="profile-info-block">
-          <h1 style="margin:4px 0 0">${esc(a.name)} ${badge(a)}</h1>
+          <h1 style="margin:4px 0 0">${esc(a.name)} ${demoBadge()} ${badge(a)}</h1>
           <div class="handle">${esc(a.handle)}</div>
           <p class="bio">${esc(a.bio)}</p>
           <div class="muted">⌖ ${esc(a.location)} &nbsp; 🔗 ${esc(a.website)} &nbsp; 📅 ${esc(a.joinDate)}</div>
@@ -1499,7 +1639,7 @@
         </div>
         <div class="tabs scroll-tabs">${tabs.map(t => `<button class="tab ${state.profileTab === t ? "active" : ""}" data-profile-tab="${t}">${cap(t)}</button>`).join("")}</div>
         ${pinned && state.profileTab === "posts" ? tweet(pinned) : ""}
-        <div id="profileFeed">${content.length ? content.map(p => tweet(p)).join("") : empty(`No ${state.profileTab} yet`, "When something shows up, it will appear here.")}</div>`;
+        <div id="profileFeed">${content.length ? content.map(p => tweet(p)).join("") : empty(`No ${state.profileTab} yet`, "When something shows up, it will appear here.")}</div>${siteFooter()}`;
       bindDynamic();
       bindProfileEdit();
     }
@@ -1521,7 +1661,7 @@
         <div class="thread-meta">${new Date(p.createdAt).toLocaleString()} · ${fmt(p.views)} Views</div>
         <div class="reply-box">${avatar(me())}<div><textarea id="replyText" maxlength="280" placeholder="Post your reply"></textarea><button class="post-btn" id="replyBtn" disabled>Reply</button></div></div>
         <div class="section-label">Replies</div>
-        <div id="commentList">${renderComments(comments)}</div></div>`;
+        <div id="commentList">${renderComments(comments)}</div></div>${siteFooter()}`;
       showView("threadView");
       bindDynamic();
       const txt = document.querySelector("#replyText"), btn = document.querySelector("#replyBtn");
@@ -1557,7 +1697,7 @@
           <div class="notif-icon ${esc(n.type)}">${icon}</div>
           <div class="notif-body">
             <div class="mini-stack">${n.from.slice(0, 5).map(id => avatar(account(id))).join("")}</div>
-            <strong>${n.from.map(id => account(id).name).join(", ")}</strong> ${esc(n.text)} <span class="time">· ${rel(n.createdAt)}</span>
+            <strong>${n.from.map(id => account(id).name).join(", ")}</strong> ${demoBadge()} ${esc(n.text)} <span class="time">· ${rel(n.createdAt)}</span>
             ${p ? `<div class="notif-preview">${esc(p.text)}</div>` : ""}
           </div>
         </div>`;
@@ -1637,7 +1777,7 @@
     }
 
     function renderPeopleResult(a) {
-      return `<div class="message" data-profile-card="${esc(a.id)}">${avatar(a)}<div><strong>${esc(a.name)}</strong> ${badge(a)}<div class="handle">${esc(a.handle)}</div><p>${esc(a.bio)}</p></div></div>`;
+      return `<div class="message" data-profile-card="${esc(a.id)}">${avatar(a)}<div><strong>${esc(a.name)}</strong> ${demoBadge()} ${badge(a)}<div class="handle">${esc(a.handle)}</div><p>${esc(a.bio)}</p></div></div>`;
     }
 
     function setExploreQuery(value) {
@@ -1685,6 +1825,7 @@
     function showView(id) {
       document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === id));
       document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === id));
+      document.querySelector("#floatPost").style.display = id === "aboutView" ? "none" : "";
       document.querySelector("#floatPost").textContent = id === "messagesView" ? "☏+" : "+";
       setTopbar(id);
       if (id === "homeView") renderHome();
@@ -1747,6 +1888,15 @@
         right.textContent = "•••";
         right.onclick = () => openProfileMore(state.currentProfileId);
         title.textContent = account(state.currentProfileId).name;
+        return;
+      }
+
+      if (id === "aboutView") {
+        left.className = "round-btn";
+        left.innerHTML = "‹";
+        left.onclick = () => showView("homeView");
+        right.style.visibility = "hidden";
+        title.textContent = "About L";
         return;
       }
 
@@ -1853,7 +2003,7 @@
       document.querySelector("#drawerPanel").innerHTML = `
         <div class="drawer-head">
           ${avatar(a)}
-          <div><strong style="font-size:24px">${esc(a.name)}</strong> ${badge(a)}<div class="handle">${esc(a.handle)}</div></div>
+          <div><strong style="font-size:24px">${esc(a.name)}</strong> ${demoBadge()} ${badge(a)}<div class="handle">${esc(a.handle)}</div></div>
           <div><strong>${fmt(a.following)}</strong> <span class="muted">正在关注</span> &nbsp; <strong>${fmt(a.followers)}</strong> <span class="muted">关注者</span></div>
         </div>
         <button class="drawer-item" data-drawer-view="profileView">♙ 个人资料</button>
@@ -1865,6 +2015,7 @@
         <button class="drawer-item" data-drawer-action="creator">♢ 创作者工作室</button>
         <div class="drawer-sep"></div>
         <button class="drawer-item" data-drawer-view="grokView">◌ 下载 Grok</button>
+        <button class="drawer-item" data-drawer-view="aboutView">ⓘ About L</button>
         <button class="drawer-item" data-drawer-action="settings">⚙ 设置和隐私</button>
         <button class="drawer-item" data-drawer-action="help">？ 帮助中心</button>`;
       drawer.classList.add("open");
@@ -1972,7 +2123,7 @@
       };
     }
     function openModal(id) { document.querySelector(`#${id}`).classList.add("open"); fillIdentitySelect(); }
-    function closeModals() { document.querySelectorAll(".modal").forEach(m => m.classList.remove("open")); }
+    function closeModals() { document.querySelectorAll(".modal:not(.no-dismiss)").forEach(m => m.classList.remove("open")); }
     function fillIdentitySelect() {
       const select = document.querySelector("#composeIdentity");
       select.innerHTML = Object.values(state.accounts).map(a => `<option value="${esc(a.id)}">${esc(a.name)} ${esc(a.handle)}</option>`).join("");
@@ -2086,6 +2237,15 @@
       document.querySelector("#editorDeleteMessage").onclick = deleteSelectedMessage;
     }
     function openEditMode() { openModal("editModeModal"); renderEditor(); }
+    function acceptDisclaimer() {
+      localStorage.setItem(DISCLAIMER_KEY, "yes");
+      document.querySelector("#disclaimerModal").classList.remove("open");
+    }
+    function showDisclaimerIfNeeded() {
+      if (localStorage.getItem(DISCLAIMER_KEY) !== "yes") {
+        document.querySelector("#disclaimerModal").classList.add("open");
+      }
+    }
     function createUserFromForm() {
       const id = `user-${Date.now()}`;
       state.accounts[id] = { ...editorNewUserBase(id), name: "New User", handle: `@${id.slice(-8)}` };
@@ -2281,7 +2441,20 @@
       openModal("composeModal");
     });
     document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModals));
-    document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m) closeModals(); }));
+    document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m && !m.classList.contains("no-dismiss")) closeModals(); }));
+    document.querySelector("#enterL").addEventListener("click", acceptDisclaimer);
+    document.querySelector("#learnMoreL").addEventListener("click", () => {
+      document.querySelector("#disclaimerText").innerHTML = `
+        <p><strong>L is an independent demo.</strong> It is a fan-made social media UI project built for learning web development, interface design, and software engineering.</p>
+        <p>The app runs locally in your browser, uses simulated accounts and posts, and stores demo changes in localStorage.</p>
+        <p>It does not represent real statements, endorsements, events, products, organizations, or people.</p>`;
+    });
+    document.addEventListener("click", e => {
+      const about = e.target.closest("[data-about-link]");
+      if (about) { e.preventDefault(); showView("aboutView"); return; }
+      const jump = e.target.closest("[data-view-jump]");
+      if (jump) showView(jump.dataset.viewJump);
+    });
     document.querySelector("#sideDrawer").addEventListener("click", e => { if (e.target.id === "sideDrawer") e.currentTarget.classList.remove("open"); });
     document.querySelectorAll("[data-home-tab]").forEach(b => b.addEventListener("click", () => { state.homeTab = b.dataset.homeTab; document.querySelectorAll("[data-home-tab]").forEach(x => x.classList.toggle("active", x === b)); renderHome(); }));
     document.querySelectorAll("[data-notif-tab]").forEach(b => b.addEventListener("click", () => { document.querySelectorAll("[data-notif-tab]").forEach(x => x.classList.toggle("active", x === b)); renderNotifications(b.dataset.notifTab); }));
@@ -2314,7 +2487,7 @@
     bindComposer("#homeComposer", "#homePost");
     bindComposer("#modalComposer", "#modalPost");
     fillIdentitySelect();
-    renderHome(); renderMessages(); renderProfile(); renderNotifications(); renderExplore();
+    renderHome(); renderMessages(); renderProfile(); renderNotifications(); renderExplore(); showDisclaimerIfNeeded();
     setInterval(npcTick, 18000);
   </script>
 </body>
