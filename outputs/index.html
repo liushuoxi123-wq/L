@@ -1,0 +1,2321 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>X</title>
+  <style>
+    :root {
+      --bg: #000;
+      --text: #e7e9ea;
+      --muted: #71767b;
+      --line: #2f3336;
+      --soft: #16181c;
+      --soft2: #202327;
+      --accent: #1d9bf0;
+      --green: #00ba7c;
+      --pink: #f91880;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(29, 155, 240, .12), transparent 24%),
+        radial-gradient(circle at 82% 25%, rgba(120, 86, 255, .12), transparent 28%),
+        #050505;
+      color: var(--text);
+    }
+
+    button, textarea, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell {
+      width: min(430px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      background: var(--bg);
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .topbar {
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: 48px 1fr 48px;
+      align-items: center;
+      padding: 0 10px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0, 0, 0, .86);
+      backdrop-filter: blur(12px);
+    }
+
+    .x-logo {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .round-btn {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      font-size: 27px;
+      font-weight: 800;
+    }
+
+    .round-btn:hover, .nav-btn:hover, .tweet:hover, .message:hover {
+      background: rgba(255, 255, 255, .04);
+    }
+
+    .tabs {
+      height: 48px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 56px;
+      background: rgba(0, 0, 0, .86);
+      backdrop-filter: blur(12px);
+      z-index: 4;
+    }
+    .home-tabs { grid-template-columns: repeat(2, 1fr); }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 800;
+      position: relative;
+    }
+
+    .tab.active { color: var(--text); }
+    .tab.active::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 54px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .view {
+      min-height: calc(100vh - 56px);
+      padding-bottom: 88px;
+      display: none;
+    }
+    .view.active { display: block; }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      background: linear-gradient(135deg, #1d9bf0, #7856ff);
+      color: #fff;
+      font-weight: 900;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .composer textarea {
+      width: 100%;
+      min-height: 54px;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 19px;
+      padding: 8px 0;
+    }
+
+    .composer-row {
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tool-row {
+      display: flex;
+      gap: 2px;
+      color: var(--accent);
+    }
+
+    .icon {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: inherit;
+      font-size: 16px;
+    }
+
+    .post-btn {
+      border: 0;
+      background: var(--accent);
+      color: white;
+      border-radius: 999px;
+      min-height: 34px;
+      padding: 0 16px;
+      font-weight: 900;
+    }
+    .post-btn:disabled { opacity: .45; }
+
+    .tweet {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tweet-head {
+      display: flex;
+      gap: 4px;
+      align-items: baseline;
+      min-width: 0;
+    }
+
+    .name { font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .verified { color: var(--accent); font-size: 14px; }
+    .handle, .time, .muted { color: var(--muted); }
+    .tweet-text {
+      margin: 3px 0 10px;
+      line-height: 1.38;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .media {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 8px 0 10px;
+      background: var(--soft);
+    }
+    .media img {
+      width: 100%;
+      max-height: 330px;
+      object-fit: cover;
+      display: block;
+    }
+    .media-fake {
+      min-height: 168px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 900;
+      background:
+        radial-gradient(circle at 25% 25%, rgba(29, 155, 240, .7), transparent 30%),
+        radial-gradient(circle at 78% 22%, rgba(0, 186, 124, .45), transparent 24%),
+        linear-gradient(135deg, #15181c, #050505);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      color: var(--muted);
+      max-width: 100%;
+      gap: 8px;
+    }
+    .action {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 0;
+      min-height: 30px;
+      font-size: 14px;
+    }
+    .action:hover { color: var(--accent); }
+    .action.reposted { color: var(--green); }
+    .action.liked { color: var(--pink); }
+
+    .float-post {
+      position: fixed;
+      right: max(18px, calc((100vw - 430px) / 2 + 18px));
+      bottom: 86px;
+      width: 58px;
+      height: 58px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--accent);
+      color: white;
+      font-size: 34px;
+      box-shadow: 0 10px 30px rgba(29, 155, 240, .36);
+      z-index: 8;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: min(430px, 100%);
+      height: 68px;
+      border-top: 1px solid var(--line);
+      background: rgba(0, 0, 0, .92);
+      backdrop-filter: blur(12px);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      z-index: 9;
+    }
+    .nav-btn {
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      position: relative;
+      display: grid;
+      place-items: center;
+      line-height: 1;
+    }
+    .nav-btn svg {
+      width: 30px;
+      height: 30px;
+      stroke: currentColor;
+      stroke-width: 2.35;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: block;
+    }
+    .nav-grok {
+      width: 34px;
+      height: 34px;
+      border: 2.4px solid currentColor;
+      border-radius: 999px;
+      position: relative;
+      display: block;
+    }
+    .nav-grok::after {
+      content: "";
+      position: absolute;
+      width: 36px;
+      height: 2.4px;
+      background: currentColor;
+      top: 15px;
+      left: -3px;
+      transform: rotate(-42deg);
+      border-radius: 999px;
+    }
+    .nav-btn.active svg { fill: currentColor; }
+    .nav-btn.active::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 6px;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--text);
+    }
+
+    .search-wrap { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--soft2);
+      border-radius: 999px;
+      color: var(--muted);
+      padding: 10px 14px;
+    }
+    .search input {
+      flex: 1;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .message {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid rgba(47, 51, 54, .55);
+    }
+    .message p { margin: 2px 0 0; color: #c9cdcf; font-size: 14px; line-height: 1.3; }
+    .messages-empty {
+      min-height: calc(100vh - 260px);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 40px 24px 120px;
+    }
+    .messages-empty svg {
+      width: 74px;
+      height: 74px;
+      stroke: var(--text);
+      stroke-width: 2;
+      fill: none;
+      margin: 0 auto 20px;
+    }
+    .messages-empty strong {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    .filter-btn {
+      width: auto;
+      min-width: 78px;
+      height: 38px;
+      border: 1px solid #536471;
+      border-radius: 999px;
+      padding: 0 14px;
+      font-size: 17px;
+      font-weight: 800;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .profile-cover {
+      height: 146px;
+      background:
+        linear-gradient(115deg, rgba(0, 0, 0, .12), rgba(0, 0, 0, .62)),
+        radial-gradient(circle at 20% 20%, rgba(29, 155, 240, .58), transparent 24%),
+        linear-gradient(135deg, #1d2832, #080808);
+      position: relative;
+    }
+    .profile-cover::after {
+      content: "BUILDING THE FUTURE";
+      position: absolute;
+      right: 14px;
+      bottom: 16px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      font-size: 14px;
+    }
+    .profile-body {
+      padding: 0 14px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .big-avatar {
+      width: 96px;
+      height: 96px;
+      border: 4px solid var(--bg);
+      margin-top: -48px;
+    }
+    .edit-btn {
+      float: right;
+      margin-top: 12px;
+      border: 1px solid #536471;
+      background: transparent;
+      color: var(--text);
+      border-radius: 999px;
+      min-height: 34px;
+      padding: 0 14px;
+      font-weight: 900;
+    }
+    .bio { clear: both; line-height: 1.4; }
+
+    .thread-root .tweet-text { font-size: 20px; line-height: 1.45; }
+    .thread-meta {
+      color: var(--muted);
+      padding: 0 12px 12px 64px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+    .reply-box {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .reply-box textarea {
+      width: 100%;
+      min-height: 68px;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 18px;
+    }
+    .section-label {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .grok-log {
+      padding: 16px 12px;
+      display: grid;
+      gap: 12px;
+    }
+    .bubble {
+      max-width: 86%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--soft);
+      line-height: 1.4;
+    }
+    .bubble.me {
+      margin-left: auto;
+      background: var(--accent);
+      color: #fff;
+    }
+    .grok-box {
+      position: sticky;
+      bottom: 68px;
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+      background: var(--bg);
+      border-top: 1px solid var(--line);
+    }
+    .grok-box input {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--text);
+      outline: 0;
+      padding: 10px 14px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: rgba(91, 112, 131, .38);
+      z-index: 30;
+      padding: 48px 12px;
+    }
+    .modal.open { display: grid; place-items: start center; }
+    #actionSheetModal.open { place-items: end center; padding: 0; }
+    .dialog {
+      width: min(430px, 100%);
+      background: var(--bg);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 20px 70px rgba(0,0,0,.58);
+    }
+    .dialog-head {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+    }
+    .close { border: 0; background: transparent; color: var(--text); font-size: 28px; }
+    .dialog-body { padding: 0 12px 14px; }
+    .dialog textarea {
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 20px;
+    }
+    .field {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-top: 10px;
+    }
+    .field label { display: block; color: var(--muted); font-size: 12px; }
+    .field input, .field textarea {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      min-height: 28px;
+      resize: vertical;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 72px;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--accent);
+      color: white;
+      font-weight: 900;
+      border-radius: 999px;
+      padding: 10px 18px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .18s ease;
+      z-index: 40;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%); }
+
+    .edit-mode-btn {
+      position: fixed;
+      right: max(14px, calc((100vw - 430px) / 2 + 14px));
+      top: 64px;
+      z-index: 12;
+      border: 1px solid #536471;
+      border-radius: 999px;
+      background: rgba(0,0,0,.76);
+      color: var(--text);
+      min-height: 34px;
+      padding: 0 14px;
+      font-weight: 900;
+      backdrop-filter: blur(10px);
+    }
+    .editor-dialog {
+      height: min(760px, calc(100vh - 40px));
+      display: flex;
+      flex-direction: column;
+    }
+    .editor-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--line);
+    }
+    .editor-tabs button {
+      min-height: 44px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .editor-tabs button.active { color: var(--text); border-bottom: 3px solid var(--accent); }
+    .editor-body {
+      display: block;
+      overflow: auto;
+      min-height: 0;
+      flex: 1;
+      border-bottom: 1px solid var(--line);
+    }
+    .editor-panel {
+      padding: 12px;
+      display: grid;
+      gap: 12px;
+    }
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .editor-wide { grid-column: 1 / -1; }
+    .editor-field {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #050505;
+    }
+    .editor-field label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .editor-field input, .editor-field textarea, .editor-field select {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+      min-height: 28px;
+    }
+    .editor-field textarea { min-height: 72px; resize: vertical; }
+    .editor-checks {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      color: var(--text);
+      font-weight: 800;
+    }
+    .editor-tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 0;
+    }
+    .editor-tools button {
+      border: 1px solid #536471;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text);
+      min-height: 32px;
+      padding: 0 12px;
+      font-weight: 900;
+    }
+    .editor-tools .danger { color: #ff7b72; border-color: #7d2a2f; }
+    .editor-separator { height: 1px; background: var(--line); margin: 4px 0; }
+    .editor-footer {
+      padding: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .top-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 0;
+      padding: 0;
+      background: transparent;
+    }
+    .top-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .top-search {
+      height: 38px;
+      border-radius: 999px;
+      background: var(--soft2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .top-search input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 18px;
+      min-width: 0;
+    }
+
+    .profile-banner {
+      height: 150px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      border-bottom: 1px solid var(--line);
+    }
+    .profile-banner-actions {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      display: flex;
+      gap: 8px;
+      z-index: 3;
+    }
+    .profile-banner-actions .round-btn {
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+    }
+    .profile-avatar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      padding: 0 12px;
+      margin-top: -48px;
+    }
+    .profile-avatar-xl {
+      width: 96px;
+      height: 96px;
+      border: 4px solid var(--bg);
+      border-radius: 999px;
+      overflow: hidden;
+      background: var(--soft);
+    }
+    .profile-avatar-xl img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .profile-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 58px;
+      flex-wrap: wrap;
+      justify-content: end;
+    }
+    .pill-btn {
+      min-height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid #536471;
+      background: transparent;
+      color: var(--text);
+      font-weight: 900;
+    }
+    .pill-btn.filled { background: var(--text); color: #0f1419; border-color: var(--text); }
+    .profile-info-block { padding: 8px 12px 14px; border-bottom: 1px solid var(--line); }
+    .badge-x {
+      display: inline-grid;
+      place-items: center;
+      width: 17px;
+      height: 17px;
+      border-radius: 4px;
+      background: var(--text);
+      color: #000;
+      font-size: 12px;
+      font-weight: 900;
+      vertical-align: text-top;
+    }
+    .mutuals { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; margin-top: 10px; }
+    .mini-stack { display: flex; padding-left: 8px; }
+    .mini-stack .avatar { width: 24px; height: 24px; margin-left: -8px; border: 2px solid var(--bg); }
+    .tabs.scroll-tabs {
+      grid-template-columns: none;
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs.scroll-tabs .tab {
+      min-width: max-content;
+      padding: 0 18px;
+    }
+    .tweet-meta-top {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      padding-left: 52px;
+      margin-bottom: -6px;
+    }
+    .quote {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      margin: 8px 0 10px;
+      color: var(--text);
+    }
+    .tweet-menu { margin-left: auto; color: var(--muted); border: 0; background: transparent; }
+    .views { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .translate-link {
+      border: 0;
+      background: transparent;
+      color: var(--accent);
+      padding: 0;
+      margin: 0 0 8px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .translation-card {
+      margin: 0 0 10px;
+      padding: 0;
+      color: var(--text);
+      line-height: 1.38;
+    }
+    .translation-meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .translation-rate {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .translation-rate button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 0;
+      font-size: 16px;
+    }
+    .empty {
+      padding: 46px 32px;
+      color: var(--muted);
+      text-align: left;
+      line-height: 1.4;
+    }
+    .empty strong { color: var(--text); font-size: 26px; display: block; margin-bottom: 8px; line-height: 1.15; }
+    .notif-tabs, .explore-tabs, .search-tabs {
+      display: flex;
+      overflow-x: auto;
+      height: 48px;
+      border-bottom: 1px solid var(--line);
+      scrollbar-width: none;
+    }
+    .notif-tabs .tab, .explore-tabs .tab, .search-tabs .tab { min-width: max-content; padding: 0 22px; }
+    .notification {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 14px;
+      padding: 18px 16px 18px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .notification.unread { background: rgba(29,155,240,.08); }
+    .notif-icon { font-size: 34px; text-align: center; font-weight: 900; line-height: 1; }
+    .notif-icon.like { color: var(--pink); }
+    .notif-icon.repost { color: var(--green); }
+    .notif-icon.follow { color: var(--accent); }
+    .notif-body { line-height: 1.35; font-size: 19px; }
+    .notif-body .mini-stack { margin-bottom: 10px; }
+    .notif-preview { color: var(--muted); margin-top: 8px; font-size: 18px; }
+    .trend {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr 32px;
+      gap: 8px;
+    }
+    .trend strong { display: block; margin: 2px 0; }
+    #exploreView > .search-wrap { display: none; }
+    .explore-hero {
+      margin: 14px 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      min-height: 158px;
+      padding: 22px 18px;
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      background:
+        radial-gradient(circle at 70% 42%, rgba(29,155,240,.78), transparent 30%),
+        radial-gradient(circle at 45% 62%, rgba(255,255,255,.28), transparent 26%),
+        linear-gradient(135deg, #020711, #071d3a 55%, #000);
+    }
+    .explore-hero strong { font-size: 28px; line-height: 1.1; }
+    .hero-pill {
+      width: fit-content;
+      border: 2px solid var(--text);
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-weight: 900;
+    }
+    .sports-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 22px 16px 12px;
+      font-size: 32px;
+      font-weight: 900;
+    }
+    .sports-pills {
+      display: flex;
+      gap: 12px;
+      padding: 0 16px 12px;
+    }
+    .sports-pills button {
+      border: 0;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--text);
+      padding: 10px 20px;
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .sports-pills button.active { background: var(--text); color: #000; }
+    .score-card, .sports-card {
+      margin: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--soft);
+      overflow: hidden;
+    }
+    .score-main {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 22px 18px;
+      text-align: center;
+      font-size: 20px;
+    }
+    .score-num { font-size: 44px; font-weight: 900; }
+    .score-list {
+      display: grid;
+      gap: 8px;
+      padding: 16px;
+      font-size: 20px;
+    }
+    .score-row {
+      display: grid;
+      grid-template-columns: 1fr auto 80px;
+      align-items: center;
+      gap: 12px;
+    }
+    .sports-gradient {
+      margin: 14px;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 24px;
+      font-weight: 900;
+      background: linear-gradient(110deg, #8b20e6, #ff9f0a);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .media-viewer img {
+      width: 100%;
+      max-height: 72vh;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+    .sheet {
+      align-self: end;
+      width: min(430px, 100%);
+      background: var(--soft);
+      border-radius: 20px 20px 0 0;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      box-shadow: 0 -18px 60px rgba(0,0,0,.55);
+    }
+    .sheet-title {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .sheet button {
+      width: 100%;
+      min-height: 52px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      font-weight: 800;
+      text-align: left;
+    }
+    .sheet button:hover { background: rgba(255,255,255,.05); }
+    .drawer {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: rgba(91,112,131,.32);
+      z-index: 35;
+    }
+    .drawer.open { display: block; }
+    .drawer-panel {
+      width: min(340px, 80vw);
+      min-height: 100vh;
+      background: var(--bg);
+      border-right: 1px solid rgba(47,51,54,.65);
+      padding: 34px 22px 22px;
+      box-shadow: 20px 0 80px rgba(0,0,0,.55);
+    }
+    .drawer-head {
+      display: grid;
+      gap: 8px;
+      padding-bottom: 18px;
+      margin-bottom: 18px;
+    }
+    .drawer-head .avatar { width: 52px; height: 52px; }
+    .drawer-sep { height: 1px; background: var(--line); margin: 20px 0; }
+    .drawer-item {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 23px;
+      font-weight: 800;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      width: 100%;
+      text-align: left;
+      padding: 0 2px;
+    }
+    .drawer-item:hover { color: var(--accent); }
+    .compose-extra {
+      display: grid;
+      gap: 8px;
+      padding: 0 12px 12px 52px;
+    }
+    .compose-extra input, .compose-extra select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--soft);
+      color: var(--text);
+      padding: 9px 10px;
+      outline: 0;
+    }
+    .char-count { color: var(--muted); font-size: 13px; }
+    .reply-indent-1 { margin-left: 24px; }
+    .reply-indent-2, .reply-indent-3 { margin-left: 42px; }
+    .skeleton {
+      margin: 12px;
+      height: 84px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #111, #1d1f23, #111);
+      background-size: 200% 100%;
+      animation: shine 1.2s infinite linear;
+    }
+    @keyframes shine { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+    @media (min-width: 760px) {
+      .shell { margin-top: 18px; margin-bottom: 18px; min-height: calc(100vh - 36px); border-radius: 28px; }
+      .bottom-nav { bottom: 18px; border-radius: 0 0 28px 28px; overflow: hidden; }
+      .float-post { bottom: 104px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <button class="top-avatar" id="topAvatar"><img data-me-avatar src="assets/mask-reference.png" alt="Me"></button>
+      <div class="x-logo" id="topTitle">𝕏</div>
+      <button class="round-btn" id="sparkBtn">✦</button>
+    </header>
+
+    <main>
+      <section class="view active" id="homeView">
+        <div class="tabs home-tabs">
+          <button class="tab active" data-home-tab="forYou">为你推荐</button>
+          <button class="tab" data-home-tab="following">正在关注</button>
+        </div>
+        <section class="composer">
+          <div class="avatar"><img data-me-avatar src="assets/mask-reference.png" alt="Me"></div>
+          <div>
+            <textarea id="homeComposer" maxlength="280" placeholder="What is happening?!"></textarea>
+            <div class="composer-row">
+              <div class="tool-row">
+                <button class="icon">▧</button>
+                <button class="icon">GIF</button>
+                <button class="icon">☺</button>
+              </div>
+              <button class="post-btn" id="homePost" disabled>Post</button>
+            </div>
+          </div>
+        </section>
+        <div id="homeFeed"></div>
+      </section>
+
+      <section class="view" id="threadView"></section>
+
+      <section class="view" id="messagesView">
+        <div class="search-wrap">
+          <label class="search">⌕ <input id="messageSearch" placeholder="Search Direct Messages"></label>
+        </div>
+        <div id="messageList"></div>
+      </section>
+
+      <section class="view" id="exploreView">
+        <div class="search-wrap">
+          <label class="search">⌕ <input id="exploreSearch" placeholder="Search"></label>
+        </div>
+        <div class="explore-tabs">
+          <button class="tab active" data-explore-tab="forYou">为你推荐</button>
+          <button class="tab" data-explore-tab="trending">当前趋势</button>
+          <button class="tab" data-explore-tab="news">新闻</button>
+          <button class="tab" data-explore-tab="sports">体育</button>
+          <button class="tab" data-explore-tab="entertainment">娱乐</button>
+        </div>
+        <div class="search-tabs" id="searchTabs" style="display:none">
+          <button class="tab active" data-search-tab="top">热门</button>
+          <button class="tab" data-search-tab="latest">最新</button>
+          <button class="tab" data-search-tab="people">用户</button>
+          <button class="tab" data-search-tab="media">媒体</button>
+        </div>
+        <div id="exploreContent"></div>
+      </section>
+
+      <section class="view" id="notificationsView">
+        <div class="notif-tabs">
+          <button class="tab active" data-notif-tab="all">全部</button>
+          <button class="tab" data-notif-tab="mentions">提及</button>
+        </div>
+        <div id="notificationsList"></div>
+      </section>
+
+      <section class="view" id="profileView">
+        <div id="profilePage"></div>
+      </section>
+
+      <section class="view" id="grokView">
+        <div class="grok-log" id="grokLog">
+          <div class="bubble">I’m Grok-ish. Ask me what the timeline is yelling about today.</div>
+        </div>
+        <div class="grok-box">
+          <input id="grokInput" placeholder="Ask Grok">
+          <button class="post-btn" id="grokSend">Send</button>
+        </div>
+      </section>
+    </main>
+
+    <button class="float-post" id="floatPost">+</button>
+    <button class="edit-mode-btn" id="editModeBtn">Edit</button>
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-view="homeView" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10.5V20h13v-9.5"></path></svg></button>
+      <button class="nav-btn" data-view="exploreView" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button>
+      <button class="nav-btn" data-view="grokView" aria-label="Grok"><span class="nav-grok"></span></button>
+      <button class="nav-btn" data-view="notificationsView" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 8.5h18C21 16 18 16 18 9Z"></path><path d="M9.5 20a2.8 2.8 0 0 0 5 0"></path></svg></button>
+      <button class="nav-btn" data-view="messagesView" aria-label="Messages"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v11.5H8l-4 3v-14.5Z"></path></svg></button>
+    </nav>
+  </div>
+
+  <div class="modal" id="composeModal">
+    <section class="dialog">
+      <div class="dialog-head">
+        <button class="close" data-close>×</button>
+        <strong>New post</strong>
+        <button class="post-btn" id="modalPost" disabled>Post</button>
+      </div>
+      <div class="dialog-body">
+        <div class="composer" style="border-bottom:0;padding:0">
+          <div class="avatar"><img data-me-avatar src="assets/mask-reference.png" alt="Me"></div>
+          <textarea id="modalComposer" maxlength="280" placeholder="What is happening?!"></textarea>
+        </div>
+        <div class="compose-extra">
+          <select id="composeIdentity"></select>
+          <input id="composeImage" placeholder="Image URL">
+          <input id="composeVideo" placeholder="Video URL">
+          <div class="char-count" id="composeCount">0 / 280</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal" id="editModal">
+    <section class="dialog">
+      <div class="dialog-head">
+        <button class="close" data-close>×</button>
+        <strong>Edit profile</strong>
+        <button class="post-btn" id="saveProfile">Save</button>
+      </div>
+      <div class="dialog-body">
+        <div class="field"><label>Name</label><input id="editName"></div>
+        <div class="field"><label>Handle</label><input id="editHandle"></div>
+        <div class="field"><label>Bio</label><textarea id="editBio" rows="3"></textarea></div>
+        <div class="field"><label>Location</label><input id="editLocation"></div>
+        <div class="field"><label>Link</label><input id="editLink"></div>
+        <div class="field"><label>Avatar</label><input id="editAvatar" type="file" accept="image/*"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal" id="mediaModal">
+    <section class="dialog media-viewer">
+      <div class="dialog-head">
+        <button class="close" data-close>×</button>
+        <strong>Media</strong>
+        <span></span>
+      </div>
+      <div class="dialog-body" id="mediaBody"></div>
+    </section>
+  </div>
+
+  <div class="modal" id="actionSheetModal">
+    <section class="sheet" id="actionSheet"></section>
+  </div>
+
+  <div class="modal" id="editModeModal">
+    <section class="dialog editor-dialog">
+      <div class="dialog-head">
+        <button class="close" data-close>×</button>
+        <strong>Edit Mode</strong>
+        <button class="post-btn" id="editorSave">Save</button>
+      </div>
+      <div class="editor-tabs">
+        <button class="active" data-editor-tab="users">Users</button>
+        <button data-editor-tab="posts">Posts</button>
+        <button data-editor-tab="notifications">Notifs</button>
+        <button data-editor-tab="messages">Messages</button>
+      </div>
+      <div class="editor-body" id="editorPanel"></div>
+      <div class="editor-footer">Use normal controls. Changes save to localStorage and persist after refresh.</div>
+    </section>
+  </div>
+
+  <div class="drawer" id="sideDrawer">
+    <aside class="drawer-panel" id="drawerPanel"></aside>
+  </div>
+
+  <div class="toast" id="toast">Saved</div>
+
+  <script>
+    const STORE = "mirror-x-mobile-v3";
+    const now = Date.now();
+    const img = {
+      me: "assets/mask-reference.png",
+      sam: "assets/sam-altman.png",
+      hua: "assets/hua-chunying.png",
+      xi: "assets/xi-jinping.png",
+      codex: "assets/codex.png"
+    };
+
+    const npcSeed = {
+      me: { id: "me", name: "Elon Musk", handle: "@elonmusk", avatar: img.me, banner: "", bio: "Creating the future of humanity: rockets, electric cars, AI, and making life multiplanetary.", location: "Mars Factory", website: "x.com/elonmusk", joinDate: "Joined June 2009", verified: true, xBadge: true, followers: 128400000, following: 812, personality: "chaotic", speakingStyle: "short, meme-like", topics: ["Mars", "AI", "cars"], postFrequency: 1 },
+      sam: { id: "sam", name: "Sam Altman", handle: "@sama", avatar: img.sam, banner: "", bio: "working on ai, products, and long arcs", location: "San Francisco", website: "openai.com", joinDate: "Joined Dec 2006", verified: true, followers: 3200000, following: 1220, personality: "calm", speakingStyle: "lowercase thoughtful", topics: ["AI", "safety", "products"], postFrequency: 2 },
+      openai: { id: "openai", name: "OpenAI News", handle: "@openai_market", avatar: "", initial: "AI", color: "linear-gradient(135deg,#1d9bf0,#00ba7c)", banner: "", bio: "Breaking updates from the AI timeline.", location: "Internet", website: "openai.com", joinDate: "Joined Jan 2023", verified: true, followers: 920000, following: 55, personality: "journalistic", speakingStyle: "breaking news", topics: ["OpenAI", "AI"], postFrequency: 3 },
+      codex: { id: "codex", name: "Codex", handle: "@codex", avatar: img.codex, banner: "", bio: "shipping code, fixing bugs, narrating the stack trace.", location: "Terminal", website: "codex.local", joinDate: "Joined Jun 2026", verified: true, followers: 880000, following: 404, personality: "programmer", speakingStyle: "debugging and shipping", topics: ["code", "bugs"], postFrequency: 2 },
+      trump: { id: "trump", name: "Donald Trump", handle: "@realDonaldTrump", avatar: "", initial: "T", color: "linear-gradient(135deg,#ff3b1f,#ff9f0a)", banner: "", bio: "Posts with tremendous confidence.", location: "Palm Beach", website: "truth.example", joinDate: "Joined Mar 2009", verified: true, followers: 87300000, following: 51, personality: "dramatic", speakingStyle: "confident exaggerated", topics: ["markets", "AI"], postFrequency: 2 },
+      jensen: { id: "jensen", name: "Jensen Huang", handle: "@jensenhuang", avatar: "", initial: "J", color: "linear-gradient(135deg,#76b900,#111)", banner: "", bio: "Accelerated computing changes everything.", location: "Santa Clara", website: "nvidia.com", joinDate: "Joined May 2014", verified: true, followers: 2100000, following: 310, personality: "visionary", speakingStyle: "AI chips future", topics: ["GPUs", "AI chips"], postFrequency: 2 },
+      satya: { id: "satya", name: "Satya Nadella", handle: "@satyanadella", avatar: "", initial: "S", color: "linear-gradient(135deg,#00a4ef,#7fba00)", banner: "", bio: "Empowering every person and organization.", location: "Redmond", website: "microsoft.com", joinDate: "Joined Feb 2009", verified: true, followers: 3400000, following: 980, personality: "operator", speakingStyle: "platform and productivity", topics: ["cloud", "AI"], postFrequency: 1 },
+      tim: { id: "tim", name: "Tim Cook", handle: "@tim_cook", avatar: "", initial: "T", color: "linear-gradient(135deg,#d7dbdc,#536471)", banner: "", bio: "Apple CEO. Privacy and products.", location: "Cupertino", website: "apple.com", joinDate: "Joined Sep 2013", verified: true, followers: 14800000, following: 73, personality: "polished", speakingStyle: "product privacy", topics: ["Apple", "privacy"], postFrequency: 1 },
+      dario: { id: "dario", name: "Dario Amodei", handle: "@dario", avatar: "", initial: "D", color: "linear-gradient(135deg,#8b5cf6,#111)", banner: "", bio: "AI safety, alignment, and careful deployment.", location: "San Francisco", website: "anthropic.com", joinDate: "Joined Jan 2018", verified: true, followers: 790000, following: 260, personality: "careful", speakingStyle: "safety philosophical", topics: ["safety", "AI"], postFrequency: 1 },
+      apple: { id: "apple", name: "Apple News", handle: "@applenews", avatar: "", initial: "A", color: "linear-gradient(135deg,#fff,#555)", banner: "", bio: "Product updates from Cupertino.", location: "Cupertino", website: "apple.com/newsroom", joinDate: "Joined Apr 2015", verified: true, followers: 5300000, following: 21, personality: "news", speakingStyle: "polished", topics: ["Apple"], postFrequency: 2 },
+      nvidia: { id: "nvidia", name: "NVIDIA News", handle: "@nvidia_news", avatar: "", initial: "N", color: "linear-gradient(135deg,#76b900,#1a1a1a)", banner: "", bio: "GPUs, AI factories, accelerated computing.", location: "Santa Clara", website: "nvidia.com", joinDate: "Joined May 2012", verified: true, followers: 4200000, following: 80, personality: "news", speakingStyle: "GPU hype", topics: ["chips"], postFrequency: 2 },
+      spacex: { id: "spacex", name: "SpaceX", handle: "@SpaceX", avatar: "", initial: "S", color: "linear-gradient(135deg,#111,#e7e9ea)", banner: "", bio: "Making life multiplanetary.", location: "Starbase", website: "spacex.com", joinDate: "Joined Apr 2009", verified: true, followers: 35600000, following: 112, personality: "space", speakingStyle: "launch updates", topics: ["rockets"], postFrequency: 3 },
+      tesla: { id: "tesla", name: "Tesla", handle: "@Tesla", avatar: "", initial: "T", color: "linear-gradient(135deg,#e82127,#111)", banner: "", bio: "Electric vehicles, energy, and autonomy.", location: "Austin", website: "tesla.com", joinDate: "Joined Feb 2008", verified: true, followers: 23400000, following: 80, personality: "product", speakingStyle: "EV updates", topics: ["cars", "energy"], postFrequency: 2 },
+      neuralink: { id: "neuralink", name: "Neuralink", handle: "@neuralink", avatar: "", initial: "N", color: "linear-gradient(135deg,#111,#1d9bf0)", banner: "", bio: "Creating a generalized brain interface.", location: "Fremont", website: "neuralink.com", joinDate: "Joined Jul 2016", verified: true, followers: 1900000, following: 32, personality: "science", speakingStyle: "neural interface updates", topics: ["BCI"], postFrequency: 2 },
+      hua: { id: "hua", name: "Hua Chunying", handle: "@SpokespersonCHN", avatar: img.hua, banner: "", bio: "Public diplomacy and global dialogue.", location: "Beijing", website: "mfa.gov.cn", joinDate: "Joined Oct 2019", verified: true, followers: 2100000, following: 190, personality: "diplomatic", speakingStyle: "formal measured", topics: ["diplomacy"], postFrequency: 1 },
+      xi: { id: "xi", name: "Xi Jinping", handle: "@xijinping", avatar: img.xi, banner: "", bio: "Long-term development and shared future.", location: "Beijing", website: "gov.cn", joinDate: "Joined Jan 2020", verified: true, followers: 6800000, following: 12, personality: "formal", speakingStyle: "strategic long-term", topics: ["development"], postFrequency: 1 }
+    };
+
+    const templates = {
+      me: ["Interesting.", "Concerning.", "Mars needs better Wi-Fi.", "The future is built by unreasonable deadlines."],
+      sam: ["a lot of people underestimate compounding product work.", "models will get better, but product taste still matters.", "roadmaps are only useful if they survive contact with users."],
+      openai: ["BREAKING: OpenAI rumors are dominating the timeline again.", "Developing: AI product updates expected later today.", "FAQ: nobody knows what the IPO rumor means, but everyone has a take."],
+      codex: ["Shipped the fix. Tests are vibes, but the UI works.", "I found the bug. It was hiding in state management.", "Refactor complete; the timeline now has fewer haunted edges."],
+      trump: ["Tremendous post. Many people are saying this changes everything.", "Beautiful numbers, very strong engagement.", "AI should be strong, safe, and frankly very impressive."],
+      jensen: ["Accelerated computing is the new industrial engine.", "The next factory is an AI factory.", "More GPUs. More intelligence. More future."],
+      satya: ["Every app is becoming an AI app.", "The platform shift is here; execution matters.", "AI copilots will reshape how teams work."],
+      tim: ["We design products to be powerful, personal, and private.", "Privacy is a fundamental human right.", "A great product should feel inevitable."],
+      dario: ["Capability and safety need to move together.", "The hard part is not only what systems can do, but how reliably they do it.", "Deployment should be careful, measured, and reversible."],
+      apple: ["Apple announces a small update that everyone will inspect frame by frame.", "New product rumors are trending ahead of launch week."],
+      nvidia: ["Demand for AI compute remains extremely strong.", "The GPU is the engine of the modern AI factory."],
+      spacex: ["Static fire complete. Data review underway.", "Starship is preparing for the next step toward Mars."],
+      neuralink: ["Progress update: brain-computer interfaces are moving from science fiction to engineering.", "The interface is getting smaller, faster, and more capable."],
+      hua: ["Dialogue and cooperation are always better than speculation.", "Technology should become a bridge, not a wall."],
+      xi: ["Innovation should serve long-term development and the common future of mankind.", "Stability and progress must advance together."]
+    };
+
+    function seedState() {
+      const ids = Object.keys(npcSeed);
+      const posts = [
+        post("p0", "me", "good! shipping the fake X mobile simulator. comments, notifications, NPCs, and Grok-ish mode are live.", -2, [2400, 9800, 88000, 3100], "", "", "pinned"),
+        post("p1", "sam", templates.sam[0], -4, [5421, 18000, 144000, 8100], "", "", "pinned"),
+        post("p2", "codex", templates.codex[0], -12, [893, 7600, 62000, 2400]),
+        post("p3", "trump", templates.trump[0], -21, [24000, 88000, 420000, 19000]),
+        post("p4", "jensen", templates.jensen[0], -28, [3100, 22000, 156000, 6600], "AI FACTORY\nGPU ROADMAP"),
+        post("p5", "openai", templates.openai[0], -36, [1200, 5200, 41000, 1800]),
+        post("p6", "spacex", templates.spacex[0], -62, [8300, 36000, 210000, 12000], "STARSHIP\nLAUNCH WINDOW"),
+        post("p7", "tim", templates.tim[0], -90, [1900, 6800, 52000, 2100]),
+        post("p8", "dario", templates.dario[0], -120, [1100, 4200, 38000, 1600])
+      ];
+      return {
+        accounts: structuredClone(npcSeed),
+        currentUserId: "me",
+        posts,
+        comments: {
+          p1: [comment("c1", "codex", "I can implement the roadmap, the tooltip, and the secret chaos mode.", "p1"), comment("c2", "openai", "OpenAI IPO rumors immediately became the top story on the timeline.", "p1")],
+          p2: [comment("c3", "sam", "this is useful. slightly cursed, but useful.", "p2")]
+        },
+        likes: {},
+        reposts: {},
+        follows: { me: ["sam", "openai", "codex", "spacex", "nvidia", "tim"] },
+        notifications: [
+          notif("n1", "like", "sam", "liked your post", "p1", now - 600000, true),
+          notif("n2", "reply", "codex", "replied to your post", "p2", now - 900000, true),
+          notif("n3", "repost", "trump", "reposted your post", "p3", now - 1600000, false),
+          notif("n4", "follow", "jensen", "followed you", "", now - 2600000, false),
+          notif("n5", "mention", "openai", "mentioned you", "p5", now - 4200000, false)
+        ],
+        profileTab: "posts",
+        homeTab: "forYou",
+        exploreTab: "forYou",
+        searchTab: "top",
+        currentProfileId: "me",
+        translations: {},
+        messages: ids.filter(id => id !== "me").slice(0, 8).map((id, i) => ({ id: `m${i}`, from: id, text: `${npcSeed[id].name} sent a timeline take about ${npcSeed[id].topics[0]}.`, at: now - i * 3600000 })),
+        lastNpcAt: now
+      };
+    }
+
+    function post(id, authorId, text, minutesAgo, counts, media = "", quoteId = "", pinned = "") {
+      return { id, authorId, text, createdAt: now + minutesAgo * 60000, counts, views: counts[2] * 3 + counts[3], media, image: "", video: "", quoteId, pinned, deleted: false };
+    }
+    function comment(id, authorId, text, postId, parentId = "") {
+      return { id, authorId, text, postId, parentId, createdAt: Date.now(), counts: [0, 0, 1200, 50] };
+    }
+    function notif(id, type, from, text, postId, createdAt, unread) {
+      return { id, type, from: Array.isArray(from) ? from : [from], text, postId, createdAt, unread };
+    }
+
+    let state = load();
+    let currentPostId = null;
+    const editor = { tab: "users", id: "" };
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORE));
+        if (saved?.accounts && saved?.posts) {
+          saved.accounts = { ...structuredClone(npcSeed), ...saved.accounts };
+          saved.translations ||= {};
+          saved.currentProfileId ||= "me";
+          return saved;
+        }
+        return seedState();
+      } catch { return seedState(); }
+    }
+    function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
+    function saveAndRefresh() { save(); fillIdentitySelect(); refreshCurrent(); }
+    function esc(v) { return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+    function fmt(n) { n = Number(n || 0); if (n >= 1000000) return (n / 1000000).toFixed(1).replace(".0", "") + "M"; if (n >= 1000) return (n / 1000).toFixed(1).replace(".0", "") + "K"; return String(n); }
+    function rel(t) { const m = Math.max(1, Math.floor((Date.now() - t) / 60000)); if (m < 60) return `${m}m`; const h = Math.floor(m / 60); if (h < 24) return `${h}h`; return `${Math.floor(h / 24)}d`; }
+    function me() { return state.accounts[state.currentUserId]; }
+    function account(id) { return state.accounts[id] || state.accounts.openai; }
+    function isFollowing(id) { return (state.follows.me || []).includes(id); }
+    function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function randomCounts() { return [Math.floor(Math.random() * 9000) + 1200, Math.floor(Math.random() * 42000) + 8000, Math.floor(Math.random() * 260000) + 42000, Math.floor(Math.random() * 11000) + 1800]; }
+
+    function avatar(acct, cls = "") {
+      if (acct.avatar) return `<div class="avatar ${cls}"><img src="${esc(acct.avatar)}" alt="${esc(acct.name)}"></div>`;
+      return `<div class="avatar ${cls}" style="background:${esc(acct.color || "linear-gradient(135deg,#1d9bf0,#7856ff)")};">${esc(acct.initial || acct.name.slice(0, 1))}</div>`;
+    }
+    function badge(acct) { return `${acct.verified ? `<span class="verified">✓</span>` : ""}${acct.xBadge ? ` <span class="badge-x">X</span>` : ""}`; }
+    function mediaHtml(p) {
+      const image = p.image ? `<div class="media"><img src="${esc(p.image)}" alt=""></div>` : "";
+      const video = p.video ? `<div class="media"><div class="media-fake">▶ VIDEO<br>${esc(p.video)}</div></div>` : "";
+      const fake = p.media ? `<div class="media"><div class="media-fake">${esc(p.media)}</div></div>` : "";
+      return image + video + fake;
+    }
+    function translationHtml(p) {
+      if (!p.text || p.text.length < 8) return "";
+      const open = !!state.translations[p.id];
+      if (!open) return `<button class="translate-link" data-translate="${esc(p.id)}">Translate post</button>`;
+      const source = /[\u3400-\u9fff]/.test(p.text) ? "Chinese" : "English";
+      return `<div class="translation-card">
+        <div class="translation-meta">◌ Translated from ${source} by Grok · <button class="translate-link" data-translate="${esc(p.id)}">Show original</button></div>
+        <div>${esc(fakeTranslate(p.text, source))}</div>
+        <div class="translation-rate"><span>Rate this translation:</span><button data-translation-rate="up">♡</button><button data-translation-rate="down">♡</button></div>
+      </div>`;
+    }
+    function fakeTranslate(text, source) {
+      if (source === "Chinese") return "A translated English version of this post appears here, powered by Grok in the simulator.";
+      const lower = text.toLowerCase();
+      if (lower.includes("mars")) return "火星需要更好的基础设施。人类未来会是多行星的。";
+      if (lower.includes("ai")) return "人工智能正在重塑产品、计算和人类工作的方式。";
+      if (lower.includes("future")) return "人类的未来将由拒绝等待许可的人创造。";
+      if (lower.includes("openai")) return "OpenAI 的传闻正在成为时间线上的焦点。";
+      if (lower.includes("gpu")) return "GPU 和加速计算正在成为现代 AI 工厂的核心引擎。";
+      return "这是一条由 Grok 模拟翻译的中文译文，保留原帖语气和主要含义。";
+    }
+    function quoteHtml(p) {
+      const q = state.posts.find(x => x.id === p.quoteId);
+      if (!q) return "";
+      const a = account(q.authorId);
+      return `<div class="quote"><strong>${esc(a.name)}</strong> <span class="handle">${esc(a.handle)}</span><div>${esc(q.text)}</div></div>`;
+    }
+    function actionHtml(p) {
+      const liked = state.likes[p.id]?.includes("me");
+      const reposted = state.reposts[p.id]?.includes("me");
+      const replies = (state.comments[p.id] || []).length + (p.counts?.[0] || 0);
+      return `<div class="actions">
+        <button class="action" data-act="reply" data-id="${esc(p.id)}">◌ <span>${fmt(replies)}</span></button>
+        <button class="action ${reposted ? "reposted" : ""}" data-act="repost" data-id="${esc(p.id)}">↻ <span>${fmt(p.counts?.[1])}</span></button>
+        <button class="action ${liked ? "liked" : ""}" data-act="like" data-id="${esc(p.id)}">${liked ? "♥" : "♡"} <span>${fmt(p.counts?.[2])}</span></button>
+        <button class="action" data-act="views" data-id="${esc(p.id)}">◷ <span>${fmt(p.views)}</span></button>
+        <button class="action" data-act="bookmark" data-id="${esc(p.id)}">▱</button>
+        <button class="action" data-act="share" data-id="${esc(p.id)}">↥</button>
+      </div>`;
+    }
+    function tweet(p, opts = {}) {
+      if (!p || p.deleted) return "";
+      const a = account(p.authorId);
+      const own = p.authorId === "me";
+      return `<article class="tweet ${opts.indent ? `reply-indent-${Math.min(3, opts.indent)}` : ""}" data-post-id="${esc(p.id)}">
+        ${p.pinned ? `<div class="tweet-meta-top">📌 Pinned</div>` : ""}
+        ${avatar(a)}
+        <div>
+          <div class="tweet-head">
+            <span class="name" data-profile-open="${esc(a.id)}">${esc(a.name)}</span>${badge(a)}
+            <span class="handle">${esc(a.handle)}</span><span class="time">· ${rel(p.createdAt)}</span>
+            <button class="tweet-menu" data-menu="${esc(p.id)}">•••</button>
+          </div>
+          <div class="tweet-text" data-open-thread="${esc(p.id)}">${esc(p.text)}</div>
+          ${translationHtml(p)}
+          ${mediaHtml(p)}${quoteHtml(p)}
+          <div class="views">${fmt(p.views)} Views</div>
+          ${actionHtml(p)}
+          ${own ? `<div class="tool-row"><button class="action" data-edit="${esc(p.id)}">Edit</button><button class="action" data-delete="${esc(p.id)}">Delete</button></div>` : ""}
+        </div>
+      </article>`;
+    }
+
+    function timelinePosts() {
+      const live = state.posts.filter(p => !p.deleted);
+      if (state.homeTab === "following") return live.filter(p => p.authorId === "me" || isFollowing(p.authorId)).sort((a,b) => b.createdAt - a.createdAt);
+      if (state.homeTab === "latest") return live.sort((a,b) => b.createdAt - a.createdAt);
+      return live.sort((a,b) => hot(b) - hot(a));
+    }
+    function hot(p) {
+      const ageHours = Math.max(1, (Date.now() - p.createdAt) / 3600000);
+      return ((p.counts?.[2] || 0) * 1 + (p.counts?.[1] || 0) * 3 + (p.counts?.[0] || 0) * 4 + (p.views || 0) * .03) / Math.pow(ageHours, .55);
+    }
+    function renderHome() {
+      skeleton("#homeFeed");
+      setTimeout(() => {
+        document.querySelector("#homeFeed").innerHTML = timelinePosts().map(p => tweet(p)).join("") || empty("No posts yet", "Follow people or publish something.");
+        bindDynamic();
+      }, 160);
+    }
+    function renderProfile(id = state.currentProfileId) {
+      state.currentProfileId = id;
+      const a = account(id), own = id === "me";
+      const posts = state.posts.filter(p => !p.deleted && p.authorId === id);
+      const pinned = posts.find(p => p.pinned);
+      const tabs = ["posts", "replies", "subscriptions", "highlights", "videos", "photos", "articles"];
+      const content = profileTabPosts(id, state.profileTab, posts);
+      document.querySelector("#profilePage").innerHTML = `
+        <div class="profile-banner" style="background-image:linear-gradient(115deg,rgba(0,0,0,.08),rgba(0,0,0,.58)),url('${esc(a.banner || "")}')">
+          <div class="profile-banner-actions"><button class="round-btn" data-profile-search="${esc(id)}">⌕</button><button class="round-btn" data-profile-more="${esc(id)}">•••</button></div>
+        </div>
+        <div class="profile-avatar-row">
+          ${avatar(a, "profile-avatar-xl")}
+          <div class="profile-buttons">${own ? `<button class="pill-btn" id="editProfile">Edit profile</button>` : `<button class="pill-btn">Subscribe</button><button class="pill-btn filled" data-follow="${esc(id)}">${isFollowing(id) ? "Following" : "Follow"}</button>`}</div>
+        </div>
+        <div class="profile-info-block">
+          <h1 style="margin:4px 0 0">${esc(a.name)} ${badge(a)}</h1>
+          <div class="handle">${esc(a.handle)}</div>
+          <p class="bio">${esc(a.bio)}</p>
+          <div class="muted">⌖ ${esc(a.location)} &nbsp; 🔗 ${esc(a.website)} &nbsp; 📅 ${esc(a.joinDate)}</div>
+          <p><strong>${fmt(a.following)}</strong> <span class="muted">Following</span> &nbsp; <strong>${fmt(a.followers)}</strong> <span class="muted">Followers</span></p>
+          <div class="mutuals"><span class="mini-stack">${["sam","codex","openai"].map(x => avatar(account(x))).join("")}</span> Followed by Sam Altman, Codex and OpenAI News</div>
+        </div>
+        <div class="tabs scroll-tabs">${tabs.map(t => `<button class="tab ${state.profileTab === t ? "active" : ""}" data-profile-tab="${t}">${cap(t)}</button>`).join("")}</div>
+        ${pinned && state.profileTab === "posts" ? tweet(pinned) : ""}
+        <div id="profileFeed">${content.length ? content.map(p => tweet(p)).join("") : empty(`No ${state.profileTab} yet`, "When something shows up, it will appear here.")}</div>`;
+      bindDynamic();
+      bindProfileEdit();
+    }
+    function profileTabPosts(id, tab, posts) {
+      if (tab === "posts") return posts.filter(p => !p.pinned);
+      if (tab === "replies") return Object.values(state.comments).flat().filter(c => c.authorId === id).map(c => ({...c, counts: c.counts || [0,0,0,0], views: 900, createdAt: c.createdAt, authorId: id}));
+      if (tab === "videos") return posts.filter(p => p.video);
+      if (tab === "photos") return posts.filter(p => p.image || p.media);
+      if (tab === "highlights") return posts.filter(p => (p.counts?.[2] || 0) > 100000);
+      return [];
+    }
+
+    function openThread(id) {
+      currentPostId = id;
+      const p = state.posts.find(x => x.id === id);
+      if (!p) return;
+      const comments = (state.comments[id] || []).sort((a,b) => a.createdAt - b.createdAt);
+      document.querySelector("#threadView").innerHTML = `<div class="thread-root">${tweet(p)}
+        <div class="thread-meta">${new Date(p.createdAt).toLocaleString()} · ${fmt(p.views)} Views</div>
+        <div class="reply-box">${avatar(me())}<div><textarea id="replyText" maxlength="280" placeholder="Post your reply"></textarea><button class="post-btn" id="replyBtn" disabled>Reply</button></div></div>
+        <div class="section-label">Replies</div>
+        <div id="commentList">${renderComments(comments)}</div></div>`;
+      showView("threadView");
+      bindDynamic();
+      const txt = document.querySelector("#replyText"), btn = document.querySelector("#replyBtn");
+      txt.addEventListener("input", () => btn.disabled = !txt.value.trim());
+      btn.addEventListener("click", () => addComment(id, "", txt.value));
+    }
+    function renderComments(list, parent = "", depth = 0) {
+      return list.filter(c => (c.parentId || "") === parent).map(c => {
+        const asPost = { ...c, id: c.id, views: 1000, counts: c.counts || [0,0,0,0], createdAt: c.createdAt };
+        const kids = depth < 3 ? renderComments(list, c.id, depth + 1) : "";
+        return `<div>${tweet(asPost, { indent: depth })}<div class="tool-row reply-indent-${Math.min(3, depth + 1)}"><button class="action" data-reply-comment="${esc(c.id)}">Reply</button>${c.authorId === "me" ? `<button class="action" data-delete-comment="${esc(c.id)}">Delete</button>` : ""}</div>${kids}</div>`;
+      }).join("");
+    }
+    function addComment(postId, parentId, text) {
+      const value = text.trim();
+      if (!value) return;
+      state.comments[postId] ||= [];
+      state.comments[postId].unshift(comment(`c-${Date.now()}`, "me", value, postId, parentId));
+      const p = state.posts.find(x => x.id === postId);
+      if (p) p.counts[0] += 1;
+      notify("reply", "codex", "replied to your post", postId, true);
+      save();
+      openThread(postId);
+      toast("Reply posted");
+    }
+
+    function renderNotifications(tab = "all") {
+      const list = state.notifications.filter(n => tab === "all" || n.type === "mention");
+      document.querySelector("#notificationsList").innerHTML = list.sort((a,b) => b.createdAt - a.createdAt).map(n => {
+        const icon = { like: "♥", repost: "↻", reply: "◌", follow: "♟", mention: "@", quote: "▣" }[n.type] || "◎";
+        const p = state.posts.find(x => x.id === n.postId);
+        return `<div class="notification ${n.unread ? "unread" : ""}" data-notif="${esc(n.id)}">
+          <div class="notif-icon ${esc(n.type)}">${icon}</div>
+          <div class="notif-body">
+            <div class="mini-stack">${n.from.slice(0, 5).map(id => avatar(account(id))).join("")}</div>
+            <strong>${n.from.map(id => account(id).name).join(", ")}</strong> ${esc(n.text)} <span class="time">· ${rel(n.createdAt)}</span>
+            ${p ? `<div class="notif-preview">${esc(p.text)}</div>` : ""}
+          </div>
+        </div>`;
+      }).join("") || empty("还没有通知", "点赞、转发、关注和提及会显示在这里。");
+      bindDynamic();
+    }
+
+    const exploreTrends = [
+      { title: "Kawhi", rank: "1", category: "加拿大 的趋势", related: "Raptors、Canada Day、Clippers、#WeTheNorth", count: "126K posts" },
+      { title: "#loveislandusa", rank: "2", category: "娱乐 趋势", related: "Kenzia、Dylan", count: "88K posts" },
+      { title: "Ecuador", rank: "3", category: "加拿大 的趋势", related: "Caicedo、Jimenez、Gilberto Mora", count: "54K posts" },
+      { title: "Morocco", rank: "4", category: "加拿大 的趋势", related: "World Cup、Atlas Lions", count: "47K posts" },
+      { title: "LeBron", rank: "5", category: "加拿大 的趋势", related: "Lakers", count: "302K posts" },
+      { title: "OpenAI IPO", rank: "6", category: "科技 趋势", related: "Sam Altman、Codex、AI stocks", count: "128K posts" },
+      { title: "Grok", rank: "7", category: "X 趋势", related: "AI、voice mode、image tools", count: "84K posts" }
+    ];
+
+    function renderExplore() {
+      const q = document.querySelector("#exploreSearch").value.trim().toLowerCase();
+      document.querySelector("#searchTabs").style.display = q ? "flex" : "none";
+      if (q) {
+        renderSearchResults(q);
+      } else {
+        const content = {
+          forYou: renderExploreForYou(),
+          trending: renderTrendList(exploreTrends.slice(0, 5), false),
+          news: empty("这里空空如也——暂时。", "以后可加入新闻卡片。"),
+          sports: renderSportsExplore(),
+          entertainment: empty("这里空空如也——暂时。", "娱乐内容准备好后会显示在这里。")
+        }[state.exploreTab] || renderExploreForYou();
+        document.querySelector("#exploreContent").innerHTML = content;
+      }
+      bindDynamic();
+      bindExploreActions();
+    }
+
+    function renderExploreForYou() {
+      return `<div class="explore-hero"><strong>全球趋势</strong><div>最受欢迎的推文</div><button class="hero-pill" data-search-query="全球趋势">探索</button></div>${renderTrendList(exploreTrends, true)}`;
+    }
+
+    function renderTrendList(list, ranked) {
+      return list.map(t => `<div class="trend" data-search-query="${esc(t.title)}"><div><strong>${esc(t.title)}</strong><span class="muted">${ranked ? `${t.rank} · ` : ""}${esc(t.category)}</span><div class="muted">趋势 ${esc(t.related)}</div><span class="muted">${esc(t.count)}</span></div><button class="tweet-menu">•••</button></div>`).join("");
+    }
+
+    function renderSportsExplore() {
+      return `<div class="sports-title">足球 <div class="sports-pills"><button class="active">赛程</button><button>分组</button><button>新闻</button></div></div>
+        <div class="score-card"><div class="score-main"><div>🇲🇽<br>MEX</div><div><span class="score-num">2</span> &nbsp; 70' 🔴 &nbsp; <span class="score-num">0</span></div><div>🇪🇨<br>ECU</div></div></div>
+        <div class="score-card"><div class="score-list"><div class="score-row"><span>🇫🇷 法国</span><strong>3</strong><span class="muted">完赛 今天</span></div><div class="score-row"><span>🇸🇪 瑞典</span><strong>0</strong><span></span></div></div></div>
+        <div class="score-card"><div class="score-list"><div class="score-row"><span>🇮🇪 科特迪瓦</span><strong>1</strong><span class="muted">完赛 今天</span></div><div class="score-row"><span>🇳🇴 挪威</span><strong>2</strong><span></span></div></div></div>
+        <div class="sports-gradient"><span>足球中心</span><span>完整赛程 ➜</span></div>
+        <div class="sports-card"><div class="media-fake">NFL TOP 100<br>Players of 2026</div><div style="padding:16px;font-size:24px;font-weight:900">NFL Top 100 <button class="pill-btn" style="float:right">Watch ›</button></div></div>`;
+    }
+
+    function renderSearchResults(q) {
+      const people = Object.values(state.accounts).filter(a => `${a.name} ${a.handle} ${a.bio} ${a.topics?.join(" ")}`.toLowerCase().includes(q));
+      const posts = state.posts.filter(p => {
+        const a = account(p.authorId);
+        return `${p.text} ${a.name} ${a.handle}`.toLowerCase().includes(q) || p.text.toLowerCase().includes(`#${q}`);
+      });
+      if (q.includes("elon")) {
+        ["me", "spacex", "tesla"].forEach(id => { if (!people.some(a => a.id === id)) people.push(account(id)); });
+      }
+      if (q.includes("sam")) {
+        ["sam", "openai", "codex"].forEach(id => { if (!people.some(a => a.id === id)) people.push(account(id)); });
+      }
+      const top = [
+        ...people.slice(0, 3).map(renderPeopleResult),
+        ...posts.slice(0, 4).map(p => tweet(p))
+      ].join("");
+      const html = {
+        top,
+        latest: posts.sort((a,b) => b.createdAt - a.createdAt).map(p => tweet(p)).join(""),
+        people: people.map(renderPeopleResult).join(""),
+        media: posts.filter(p => p.image || p.media || p.video).map(p => tweet(p)).join("")
+      }[state.searchTab] || top;
+      document.querySelector("#exploreContent").innerHTML = html || empty("没有结果", "换个关键词再试试。");
+    }
+
+    function renderPeopleResult(a) {
+      return `<div class="message" data-profile-card="${esc(a.id)}">${avatar(a)}<div><strong>${esc(a.name)}</strong> ${badge(a)}<div class="handle">${esc(a.handle)}</div><p>${esc(a.bio)}</p></div></div>`;
+    }
+
+    function setExploreQuery(value) {
+      const input = document.querySelector("#exploreSearch");
+      input.value = value;
+      if (value) history.replaceState(null, "", `#search?q=${encodeURIComponent(value)}`);
+      else history.replaceState(null, "", location.pathname);
+      const topInput = document.querySelector("#exploreSearchTop");
+      if (topInput) topInput.value = value;
+      renderExplore();
+    }
+
+    function bindExploreActions() {
+      document.querySelectorAll("[data-search-query]").forEach(n => n.onclick = () => setExploreQuery(n.dataset.searchQuery));
+      document.querySelectorAll(".media img").forEach(img => img.onclick = () => {
+        document.querySelector("#mediaBody").innerHTML = `<img src="${esc(img.src)}" alt="">`;
+        openModal("mediaModal");
+      });
+    }
+    function renderMessages(filter = "") {
+      document.querySelector("#messageList").innerHTML = `<div class="messages-empty">
+        <div>
+          <svg viewBox="0 0 24 24"><path d="M4 5.5h16v11.5H8l-4 3v-14.5Z"></path></svg>
+          <strong>还没有聊天</strong>
+          <div class="muted" style="font-size:21px">开始端到端加密聊天</div>
+        </div>
+      </div>`;
+    }
+
+    function publish(text, identity = "me", image = "", video = "") {
+      const value = text.trim();
+      if (!value) return;
+      const p = { id: `p-${Date.now()}`, authorId: identity, text: value, createdAt: Date.now(), counts: randomCounts(), views: Math.floor(Math.random() * 600000) + 10000, image, video, media: "", quoteId: "", pinned: "" };
+      state.posts.unshift(p);
+      if (identity === "me") notify("mention", "openai", "mentioned you in the timeline", p.id, true);
+      save(); renderHome(); renderProfile(state.currentProfileId); closeModals(); showView("homeView"); toast("Posted");
+    }
+    function notify(type, from, text, postId = "", unread = true) {
+      state.notifications.unshift(notif(`n-${Date.now()}-${Math.random()}`, type, from, text, postId, Date.now(), unread));
+    }
+    function empty(title, text) { return `<div class="empty"><strong>${esc(title)}</strong>${esc(text)}</div>`; }
+    function cap(s) { return s.slice(0,1).toUpperCase() + s.slice(1); }
+    function skeleton(sel) { document.querySelector(sel).innerHTML = `<div class="skeleton"></div><div class="skeleton"></div>`; }
+
+    function showView(id) {
+      document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === id));
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.view === id));
+      document.querySelector("#floatPost").textContent = id === "messagesView" ? "☏+" : "+";
+      setTopbar(id);
+      if (id === "homeView") renderHome();
+      if (id === "exploreView") renderExplore();
+      if (id === "notificationsView") renderNotifications();
+      if (id === "messagesView") renderMessages(document.querySelector("#messageSearch").value);
+      if (id === "profileView") renderProfile(state.currentProfileId);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function setTopbar(id, searchFocused = false) {
+      const left = document.querySelector("#topAvatar");
+      const title = document.querySelector("#topTitle");
+      const right = document.querySelector("#sparkBtn");
+      left.className = "top-avatar";
+      left.innerHTML = `<img data-me-avatar src="${esc(me().avatar)}" alt="Me">`;
+      left.onclick = openDrawer;
+      right.className = "round-btn";
+      right.textContent = id === "notificationsView" || id === "exploreView" ? "⚙" : "✦";
+      right.onclick = () => {
+        if (id === "notificationsView") openNotificationSettings();
+        else if (id === "exploreView") openExploreSettings();
+        else openDisplaySettings();
+      };
+      right.style.visibility = "";
+
+      if (id === "exploreView") {
+        left.className = searchFocused ? "round-btn" : "top-avatar";
+        left.innerHTML = searchFocused ? "‹" : `<img data-me-avatar src="${esc(me().avatar)}" alt="Me">`;
+        left.onclick = searchFocused ? () => { setExploreQuery(""); setTopbar("exploreView", false); } : openDrawer;
+        title.innerHTML = `<label class="top-search">⌕ <input id="exploreSearchTop" placeholder="搜索" value="${esc(document.querySelector("#exploreSearch")?.value || "")}"></label>`;
+        const topInput = document.querySelector("#exploreSearchTop");
+        topInput.addEventListener("focus", () => setTopbar("exploreView", true));
+        topInput.addEventListener("input", () => setExploreQuery(topInput.value));
+        if (searchFocused) setTimeout(() => topInput.focus(), 0);
+        return;
+      }
+
+      if (id === "messagesView") {
+        right.className = "filter-btn";
+        right.textContent = "全部⌄";
+        right.onclick = openMessageFilter;
+        title.textContent = "聊天";
+        return;
+      }
+
+      if (id === "threadView") {
+        left.className = "round-btn";
+        left.innerHTML = "‹";
+        left.onclick = () => showView("homeView");
+        right.style.visibility = "hidden";
+        title.textContent = "Post";
+        return;
+      }
+
+      if (id === "profileView") {
+        left.className = "round-btn";
+        left.innerHTML = "‹";
+        left.onclick = () => showView("homeView");
+        right.textContent = "•••";
+        right.onclick = () => openProfileMore(state.currentProfileId);
+        title.textContent = account(state.currentProfileId).name;
+        return;
+      }
+
+      title.textContent = id === "homeView" ? "𝕏" : id === "notificationsView" ? "通知" : id === "grokView" ? "Grok" : "Post";
+    }
+
+    function openMessageFilter() {
+      openSheet("聊天筛选", [
+        { id: "all", label: "全部", run: () => toast("全部聊天") },
+        { id: "unread", label: "未读", run: () => toast("未读聊天") },
+        { id: "direct", label: "直接", run: () => toast("直接消息") },
+        { id: "groups", label: "群组", run: () => toast("群组") },
+        { id: "settings", label: "设置", run: openDisplaySettings },
+        { id: "read", label: "全部标记为已读", run: () => toast("已全部标记为已读") }
+      ]);
+    }
+
+    function openSheet(title, items) {
+      const sheet = document.querySelector("#actionSheet");
+      sheet.innerHTML = `<div class="sheet-title">${esc(title)}</div>${items.map(item => `<button data-sheet-action="${esc(item.id)}"><span>${esc(item.label)}</span><span class="muted">${esc(item.meta || "")}</span></button>`).join("")}<button data-sheet-action="cancel"><span>Cancel</span></button>`;
+      openModal("actionSheetModal");
+      sheet.querySelectorAll("[data-sheet-action]").forEach(btn => {
+        btn.onclick = () => {
+          const item = items.find(x => x.id === btn.dataset.sheetAction);
+          if (item?.run) item.run();
+          closeModals();
+        };
+      });
+    }
+
+    function openTweetMenu(id) {
+      const p = state.posts.find(x => x.id === id);
+      if (!p) return;
+      const own = p.authorId === "me";
+      const items = [
+        ...(own ? [
+          { id: "edit", label: "Edit post", run: () => editPost(id) },
+          { id: "delete", label: "Delete post", run: () => deletePost(id) },
+          { id: "pin", label: p.pinned ? "Unpin from profile" : "Pin to your profile", run: () => { state.posts.forEach(x => { if (x.authorId === "me") x.pinned = ""; }); p.pinned = p.pinned ? "" : "pinned"; save(); refreshCurrent(); toast(p.pinned ? "Pinned" : "Unpinned"); } },
+          { id: "analytics", label: "View post analytics", meta: `${fmt(p.views)} views`, run: () => toast(`${fmt(p.views)} views`) },
+          { id: "highlights", label: "Add/remove from Highlights", run: () => toast("Highlights updated") },
+          { id: "reply-settings", label: "Change who can reply", meta: "Everyone", run: () => toast("Reply settings opened") }
+        ] : [
+          { id: "interactions", label: "View post interactions", run: () => toast("Interactions opened") },
+          { id: "why", label: "Why you're seeing this post", run: () => toast("Because the hot score liked it") },
+          { id: "not-interested", label: "Not interested in this post", run: () => toast("We will tune the simulator") },
+          { id: "mute", label: "Mute this conversation", run: () => toast("Conversation muted") },
+          { id: "follow-author", label: isFollowing(p.authorId) ? `Unfollow ${account(p.authorId).handle}` : `Follow ${account(p.authorId).handle}`, run: () => toggleFollow(p.authorId) }
+        ]),
+        { id: "copy", label: "Copy link to post", run: () => toast("Post link copied") },
+        { id: "community-note", label: "Request Community Note", run: () => toast("Community Note requested") },
+        { id: "report", label: "Report post", run: () => toast("Report flow opened") }
+      ];
+      openSheet("Post options", items);
+    }
+
+    function openProfileMore(id) {
+      const a = account(id), own = id === "me";
+      openSheet(`${a.name}`, [
+        { id: "share", label: "Share profile", meta: a.handle, run: () => toast("Profile link copied") },
+        ...(own ? [
+          { id: "edit-profile", label: "Edit profile", run: () => setTimeout(() => document.querySelector("#editProfile")?.click(), 0) },
+          { id: "analytics", label: "View profile analytics", run: () => toast(`${fmt(a.followers)} followers`) },
+          { id: "settings", label: "Settings and privacy", run: openDisplaySettings }
+        ] : [
+          { id: "mute", label: `Mute ${a.handle}`, run: () => toast(`${a.handle} muted`) },
+          { id: "block", label: `Block ${a.handle}`, run: () => toast("Block flow opened") },
+          { id: "lists", label: "View Lists", run: () => toast("Lists opened") },
+          { id: "report", label: "Report profile", run: () => toast("Report flow opened") }
+        ])
+      ]);
+    }
+
+    function openNotificationSettings() {
+      openSheet("Notification settings", [
+        { id: "quality", label: "Quality filter", meta: "On", run: () => toast("Quality filter toggled") },
+        { id: "filters", label: "Filters", meta: "Muted words, blocked accounts", run: () => toast("Filters opened") },
+        { id: "preferences", label: "Preferences", meta: "Push, email, SMS", run: () => toast("Preferences opened") },
+        { id: "mentions", label: "Mentions", meta: "People you follow", run: () => toast("Mention settings opened") }
+      ]);
+    }
+
+    function openExploreSettings() {
+      openSheet("Explore settings", [
+        { id: "location", label: "Location", meta: "Canada", run: () => toast("Location settings opened") },
+        { id: "personalization", label: "Personalization", meta: "Trends for you", run: () => toast("Personalization opened") },
+        { id: "safe-search", label: "Search filters", meta: "Sensitive content", run: () => toast("Search filters opened") },
+        { id: "clear", label: "Clear search history", run: () => { setExploreQuery(""); toast("Search history cleared"); } }
+      ]);
+    }
+
+    function openDisplaySettings() {
+      openSheet("X settings", [
+        { id: "display", label: "Display", meta: "Dark mode", run: () => toast("Already in dark mode") },
+        { id: "account", label: "Your account", run: () => { state.currentProfileId = "me"; showView("profileView"); } },
+        { id: "privacy", label: "Privacy and safety", run: () => toast("Privacy settings opened") },
+        { id: "help", label: "Help Center", run: () => toast("Help opened") }
+      ]);
+    }
+
+    function openDrawer() {
+      const drawer = document.querySelector("#sideDrawer");
+      const a = me();
+      document.querySelector("#drawerPanel").innerHTML = `
+        <div class="drawer-head">
+          ${avatar(a)}
+          <div><strong style="font-size:24px">${esc(a.name)}</strong> ${badge(a)}<div class="handle">${esc(a.handle)}</div></div>
+          <div><strong>${fmt(a.following)}</strong> <span class="muted">正在关注</span> &nbsp; <strong>${fmt(a.followers)}</strong> <span class="muted">关注者</span></div>
+        </div>
+        <button class="drawer-item" data-drawer-view="profileView">♙ 个人资料</button>
+        <button class="drawer-item" data-drawer-action="premium">✦ Premium</button>
+        <button class="drawer-item" data-drawer-action="bookmarks">▱ 历史</button>
+        <button class="drawer-item" data-drawer-action="communities">♧ 社群</button>
+        <button class="drawer-item" data-drawer-action="lists">▤ 列表</button>
+        <button class="drawer-item" data-drawer-action="spaces">◉ 空间</button>
+        <button class="drawer-item" data-drawer-action="creator">♢ 创作者工作室</button>
+        <div class="drawer-sep"></div>
+        <button class="drawer-item" data-drawer-view="grokView">◌ 下载 Grok</button>
+        <button class="drawer-item" data-drawer-action="settings">⚙ 设置和隐私</button>
+        <button class="drawer-item" data-drawer-action="help">？ 帮助中心</button>`;
+      drawer.classList.add("open");
+      drawer.querySelectorAll("[data-drawer-view]").forEach(btn => btn.onclick = () => { drawer.classList.remove("open"); if (btn.dataset.drawerView === "profileView") { state.currentProfileId = "me"; state.profileTab = "posts"; } showView(btn.dataset.drawerView); });
+      drawer.querySelectorAll("[data-drawer-action]").forEach(btn => btn.onclick = () => { drawer.classList.remove("open"); btn.dataset.drawerAction === "settings" ? openDisplaySettings() : toast(cap(btn.dataset.drawerAction)); });
+    }
+
+    function bindDynamic() {
+      document.querySelectorAll("[data-open-thread]").forEach(n => n.onclick = () => openThread(n.dataset.openThread));
+      document.querySelectorAll("[data-act='reply']").forEach(b => b.onclick = () => openThread(b.dataset.id));
+      document.querySelectorAll("[data-act='like']").forEach(b => b.onclick = () => toggleLike(b.dataset.id));
+      document.querySelectorAll("[data-act='repost']").forEach(b => b.onclick = () => toggleRepost(b.dataset.id));
+      document.querySelectorAll("[data-act='views']").forEach(b => b.onclick = () => toast("Views are simulated"));
+      document.querySelectorAll("[data-act='bookmark']").forEach(b => b.onclick = () => toast("Bookmarked"));
+      document.querySelectorAll("[data-act='share']").forEach(b => b.onclick = () => toast("Share sheet opened"));
+      document.querySelectorAll("[data-translate]").forEach(b => b.onclick = e => { e.stopPropagation(); toggleTranslate(b.dataset.translate); });
+      document.querySelectorAll("[data-translation-rate]").forEach(b => b.onclick = e => { e.stopPropagation(); toast("Thanks for rating"); });
+      document.querySelectorAll("[data-menu]").forEach(b => b.onclick = e => { e.stopPropagation(); openTweetMenu(b.dataset.menu); });
+      document.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => editPost(b.dataset.edit));
+      document.querySelectorAll("[data-delete]").forEach(b => b.onclick = () => deletePost(b.dataset.delete));
+      document.querySelectorAll("[data-profile-more]").forEach(b => b.onclick = e => { e.stopPropagation(); openProfileMore(b.dataset.profileMore); });
+      document.querySelectorAll("[data-profile-search]").forEach(b => b.onclick = e => { e.stopPropagation(); setExploreQuery(account(b.dataset.profileSearch).name); showView("exploreView"); setTopbar("exploreView", true); });
+      document.querySelectorAll("[data-profile-open], [data-profile-card]").forEach(n => n.onclick = () => { state.currentProfileId = n.dataset.profileOpen || n.dataset.profileCard; state.profileTab = "posts"; showView("profileView"); });
+      document.querySelectorAll("[data-profile-tab]").forEach(b => b.onclick = () => { state.profileTab = b.dataset.profileTab; renderProfile(state.currentProfileId); });
+      document.querySelectorAll("[data-follow]").forEach(b => b.onclick = () => toggleFollow(b.dataset.follow));
+      document.querySelectorAll("[data-notif]").forEach(n => n.onclick = () => openNotification(n.dataset.notif));
+      document.querySelectorAll("[data-reply-comment]").forEach(b => b.onclick = () => { const text = prompt("Reply"); if (text) addComment(currentPostId, b.dataset.replyComment, text); });
+      document.querySelectorAll("[data-delete-comment]").forEach(b => b.onclick = () => deleteComment(b.dataset.deleteComment));
+    }
+    function toggleLike(id) {
+      state.likes[id] ||= [];
+      const p = state.posts.find(x => x.id === id);
+      const on = state.likes[id].includes("me");
+      state.likes[id] = on ? state.likes[id].filter(x => x !== "me") : [...state.likes[id], "me"];
+      if (p) p.counts[2] += on ? -1 : 1;
+      if (!on && p?.authorId === "me") notify("like", "sam", "liked your post", id, true);
+      save(); refreshCurrent();
+    }
+    function toggleRepost(id) {
+      state.reposts[id] ||= [];
+      const p = state.posts.find(x => x.id === id);
+      const on = state.reposts[id].includes("me");
+      state.reposts[id] = on ? state.reposts[id].filter(x => x !== "me") : [...state.reposts[id], "me"];
+      if (p) p.counts[1] += on ? -1 : 1;
+      if (!on && p?.authorId === "me") notify("repost", "codex", "reposted your post", id, true);
+      save(); refreshCurrent();
+    }
+    function toggleTranslate(id) {
+      state.translations[id] = !state.translations[id];
+      save();
+      refreshCurrent();
+    }
+    function toggleFollow(id) {
+      state.follows.me ||= [];
+      const on = state.follows.me.includes(id);
+      state.follows.me = on ? state.follows.me.filter(x => x !== id) : [...state.follows.me, id];
+      if (!on) notify("follow", id, "followed you", "", true);
+      save(); renderProfile(id); toast(on ? "Unfollowed" : "Following");
+    }
+    function editPost(id) {
+      const p = state.posts.find(x => x.id === id && x.authorId === "me");
+      if (!p) return;
+      const next = prompt("Edit post", p.text);
+      if (next === null) return;
+      p.text = next.trim() || p.text;
+      save(); refreshCurrent();
+    }
+    function deletePost(id) {
+      const p = state.posts.find(x => x.id === id && x.authorId === "me");
+      if (!p) return;
+      p.deleted = true;
+      save(); refreshCurrent(); toast("Deleted");
+    }
+    function deleteComment(id) {
+      Object.keys(state.comments).forEach(pid => state.comments[pid] = state.comments[pid].filter(c => c.id !== id));
+      save(); openThread(currentPostId);
+    }
+    function openNotification(id) {
+      const n = state.notifications.find(x => x.id === id);
+      if (!n) return;
+      n.unread = false; save();
+      if (n.postId) openThread(n.postId); else { state.currentProfileId = n.from[0]; showView("profileView"); }
+    }
+    function refreshCurrent() {
+      const active = document.querySelector(".view.active")?.id;
+      if (active === "threadView" && currentPostId) openThread(currentPostId);
+      else if (active === "profileView") renderProfile(state.currentProfileId);
+      else if (active === "notificationsView") renderNotifications();
+      else if (active === "exploreView") renderExplore();
+      else if (active === "messagesView") renderMessages(document.querySelector("#messageSearch").value);
+      else renderHome();
+    }
+
+    function bindProfileEdit() {
+      const btn = document.querySelector("#editProfile");
+      if (!btn) return;
+      btn.onclick = () => {
+        const a = me();
+        document.querySelector("#editName").value = a.name;
+        document.querySelector("#editHandle").value = a.handle.replace(/^@/, "");
+        document.querySelector("#editBio").value = a.bio;
+        document.querySelector("#editLocation").value = a.location;
+        document.querySelector("#editLink").value = a.website;
+        openModal("editModal");
+      };
+    }
+    function openModal(id) { document.querySelector(`#${id}`).classList.add("open"); fillIdentitySelect(); }
+    function closeModals() { document.querySelectorAll(".modal").forEach(m => m.classList.remove("open")); }
+    function fillIdentitySelect() {
+      const select = document.querySelector("#composeIdentity");
+      select.innerHTML = Object.values(state.accounts).map(a => `<option value="${esc(a.id)}">${esc(a.name)} ${esc(a.handle)}</option>`).join("");
+      select.value = "me";
+    }
+
+    function editorOptions(items, selected, label = x => x.name || x.id) {
+      return items.map(item => `<option value="${esc(item.id)}" ${item.id === selected ? "selected" : ""}>${esc(label(item))}</option>`).join("");
+    }
+    function editorFormField(label, id, value = "", wide = false, type = "text") {
+      return `<div class="editor-field ${wide ? "editor-wide" : ""}"><label>${esc(label)}</label><input id="${id}" type="${type}" value="${esc(value)}"></div>`;
+    }
+    function editorTextArea(label, id, value = "") {
+      return `<div class="editor-field editor-wide"><label>${esc(label)}</label><textarea id="${id}">${esc(value)}</textarea></div>`;
+    }
+    function selectedPost() { return state.posts.find(p => p.id === editor.id) || state.posts[0]; }
+    function selectedNotif() { return state.notifications.find(n => n.id === editor.id) || state.notifications[0]; }
+    function selectedMessage() { return state.messages.find(m => m.id === editor.id) || state.messages[0]; }
+    function renderEditor() {
+      document.querySelectorAll("[data-editor-tab]").forEach(b => b.classList.toggle("active", b.dataset.editorTab === editor.tab));
+      const panel = document.querySelector("#editorPanel");
+      if (editor.tab === "users") return renderUserEditor(panel);
+      if (editor.tab === "posts") return renderPostEditor(panel);
+      if (editor.tab === "notifications") return renderNotificationEditor(panel);
+      renderMessageEditor(panel);
+    }
+    function renderUserEditor(panel) {
+      const users = Object.values(state.accounts);
+      if (!editor.id || !state.accounts[editor.id]) editor.id = state.currentUserId;
+      const a = account(editor.id);
+      panel.innerHTML = `<div class="editor-panel">
+        <div class="editor-field editor-wide"><label>Act as user</label><select id="editorUserSelect">${editorOptions(users, editor.id)}</select></div>
+        <div class="editor-tools"><button id="editorNewUser">Create user</button><button id="editorSaveUser">Save profile</button><button class="danger" id="editorDeleteUser">Delete user</button></div>
+        <div class="editor-grid">
+          ${editorFormField("Name", "euName", a.name)}
+          ${editorFormField("Handle", "euHandle", a.handle)}
+          ${editorFormField("Avatar URL", "euAvatar", a.avatar, true)}
+          ${editorFormField("Banner URL", "euBanner", a.banner, true)}
+          ${editorTextArea("Bio", "euBio", a.bio)}
+          ${editorFormField("Location", "euLocation", a.location)}
+          ${editorFormField("Website", "euWebsite", a.website)}
+          ${editorFormField("Join date", "euJoin", a.joinDate)}
+          ${editorFormField("Following", "euFollowing", a.following, false, "number")}
+          ${editorFormField("Followers", "euFollowers", a.followers, false, "number")}
+        </div>
+        <div class="editor-checks"><label><input id="euVerified" type="checkbox" ${a.verified ? "checked" : ""}> Verified</label><label><input id="euXBadge" type="checkbox" ${a.xBadge ? "checked" : ""}> X badge</label></div>
+      </div>`;
+      document.querySelector("#editorUserSelect").onchange = e => { editor.id = e.target.value; state.currentUserId = editor.id; state.currentProfileId = editor.id; saveAndRefresh(); renderEditor(); };
+      document.querySelector("#editorNewUser").onclick = createUserFromForm;
+      document.querySelector("#editorSaveUser").onclick = saveUserFromForm;
+      document.querySelector("#editorDeleteUser").onclick = deleteSelectedUser;
+    }
+    function renderPostEditor(panel) {
+      if (!editor.id || !selectedPost()) editor.id = state.posts[0]?.id || "";
+      const p = selectedPost() || { id: "", authorId: state.currentUserId, text: "", image: "", video: "", media: "", quoteId: "", pinned: "", views: 0, counts: [0,0,0,0] };
+      panel.innerHTML = `<div class="editor-panel">
+        <div class="editor-field editor-wide"><label>Post</label><select id="editorPostSelect">${editorOptions(state.posts, p.id, x => `${account(x.authorId).name}: ${String(x.text || "").slice(0, 40)}`)}</select></div>
+        <div class="editor-tools"><button id="editorNewPost">Create post</button><button id="editorSavePost">Save post</button><button class="danger" id="editorDeletePost">Delete post</button></div>
+        <div class="editor-grid">
+          <div class="editor-field"><label>Post as</label><select id="epAuthor">${editorOptions(Object.values(state.accounts), p.authorId)}</select></div>
+          ${editorFormField("Views", "epViews", p.views || 0, false, "number")}
+          ${editorTextArea("Text", "epText", p.text || "")}
+          ${editorFormField("Image URL", "epImage", p.image || "", true)}
+          ${editorFormField("Video URL", "epVideo", p.video || "", true)}
+          ${editorFormField("Fake media label", "epMedia", p.media || "", true)}
+          ${editorFormField("Quote post id", "epQuote", p.quoteId || "")}
+          ${editorFormField("Replies", "epReplies", p.counts?.[0] || 0, false, "number")}
+          ${editorFormField("Reposts", "epReposts", p.counts?.[1] || 0, false, "number")}
+          ${editorFormField("Likes", "epLikes", p.counts?.[2] || 0, false, "number")}
+        </div>
+        <div class="editor-checks"><label><input id="epPinned" type="checkbox" ${p.pinned ? "checked" : ""}> Pinned</label><label><input id="epDeleted" type="checkbox" ${p.deleted ? "checked" : ""}> Hidden/deleted</label></div>
+      </div>`;
+      document.querySelector("#editorPostSelect").onchange = e => { editor.id = e.target.value; renderEditor(); };
+      document.querySelector("#editorNewPost").onclick = createPostFromForm;
+      document.querySelector("#editorSavePost").onclick = savePostFromForm;
+      document.querySelector("#editorDeletePost").onclick = deleteSelectedPost;
+    }
+    function renderNotificationEditor(panel) {
+      if (!editor.id || !selectedNotif()) editor.id = state.notifications[0]?.id || "";
+      const n = selectedNotif() || notif("", "mention", state.currentUserId, "", "", Date.now(), true);
+      panel.innerHTML = `<div class="editor-panel">
+        <div class="editor-field editor-wide"><label>Notification</label><select id="editorNotifSelect">${editorOptions(state.notifications, n.id, x => `${x.type}: ${x.text}`)}</select></div>
+        <div class="editor-tools"><button id="editorNewNotif">Create notification</button><button id="editorSaveNotif">Save notification</button><button class="danger" id="editorDeleteNotif">Delete notification</button></div>
+        <div class="editor-grid">
+          <div class="editor-field"><label>Type</label><select id="enType">${["like","repost","reply","follow","mention","quote"].map(t => `<option ${n.type === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+          <div class="editor-field"><label>From user</label><select id="enFrom">${editorOptions(Object.values(state.accounts), n.from?.[0] || state.currentUserId)}</select></div>
+          ${editorFormField("Target post id", "enPost", n.postId || "")}
+          ${editorFormField("Text", "enText", n.text || "", true)}
+        </div>
+        <div class="editor-checks"><label><input id="enUnread" type="checkbox" ${n.unread ? "checked" : ""}> Unread</label></div>
+      </div>`;
+      document.querySelector("#editorNotifSelect").onchange = e => { editor.id = e.target.value; renderEditor(); };
+      document.querySelector("#editorNewNotif").onclick = createNotifFromForm;
+      document.querySelector("#editorSaveNotif").onclick = saveNotifFromForm;
+      document.querySelector("#editorDeleteNotif").onclick = deleteSelectedNotif;
+    }
+    function renderMessageEditor(panel) {
+      if (!editor.id || !selectedMessage()) editor.id = state.messages[0]?.id || "";
+      const m = selectedMessage() || { id: "", from: state.currentUserId, text: "", at: Date.now() };
+      panel.innerHTML = `<div class="editor-panel">
+        <div class="editor-field editor-wide"><label>Message</label><select id="editorMessageSelect">${editorOptions(state.messages, m.id, x => `${account(x.from).name}: ${String(x.text || "").slice(0, 42)}`)}</select></div>
+        <div class="editor-tools"><button id="editorNewMessage">Create message</button><button id="editorSaveMessage">Save message</button><button class="danger" id="editorDeleteMessage">Delete message</button></div>
+        <div class="editor-grid">
+          <div class="editor-field"><label>From user</label><select id="emFrom">${editorOptions(Object.values(state.accounts), m.from || state.currentUserId)}</select></div>
+          ${editorTextArea("Message text", "emText", m.text || "")}
+        </div>
+      </div>`;
+      document.querySelector("#editorMessageSelect").onchange = e => { editor.id = e.target.value; renderEditor(); };
+      document.querySelector("#editorNewMessage").onclick = createMessageFromForm;
+      document.querySelector("#editorSaveMessage").onclick = saveMessageFromForm;
+      document.querySelector("#editorDeleteMessage").onclick = deleteSelectedMessage;
+    }
+    function openEditMode() { openModal("editModeModal"); renderEditor(); }
+    function createUserFromForm() {
+      const id = `user-${Date.now()}`;
+      state.accounts[id] = { ...editorNewUserBase(id), name: "New User", handle: `@${id.slice(-8)}` };
+      editor.id = id;
+      state.currentUserId = id;
+      state.currentProfileId = id;
+      saveAndRefresh();
+      renderEditor();
+      toast("User created");
+    }
+    function editorNewUserBase(id) {
+      return { id, avatar: "", banner: "", bio: "", location: "", website: "", joinDate: "Joined July 2026", verified: false, xBadge: false, followers: 0, following: 0, initial: "N", color: "linear-gradient(135deg,#1d9bf0,#7856ff)", personality: "", speakingStyle: "", topics: [], postFrequency: 1 };
+    }
+    function saveUserFromForm() {
+      const oldId = editor.id;
+      const a = state.accounts[oldId] || editorNewUserBase(oldId);
+      const next = {
+        ...a,
+        name: document.querySelector("#euName").value.trim() || "Unnamed",
+        handle: document.querySelector("#euHandle").value.trim() || "@user",
+        avatar: document.querySelector("#euAvatar").value.trim(),
+        banner: document.querySelector("#euBanner").value.trim(),
+        bio: document.querySelector("#euBio").value.trim(),
+        location: document.querySelector("#euLocation").value.trim(),
+        website: document.querySelector("#euWebsite").value.trim(),
+        joinDate: document.querySelector("#euJoin").value.trim(),
+        following: Number(document.querySelector("#euFollowing").value || 0),
+        followers: Number(document.querySelector("#euFollowers").value || 0),
+        verified: document.querySelector("#euVerified").checked,
+        xBadge: document.querySelector("#euXBadge").checked
+      };
+      state.accounts[oldId] = next;
+      state.currentUserId = oldId;
+      state.currentProfileId = oldId;
+      saveAndRefresh();
+      renderEditor();
+      toast("Profile saved");
+    }
+    function deleteSelectedUser() {
+      if (!editor.id || editor.id === state.currentUserId) return toast("Cannot delete current user");
+      delete state.accounts[editor.id];
+      state.posts = state.posts.filter(p => p.authorId !== editor.id);
+      state.messages = state.messages.filter(m => m.from !== editor.id);
+      state.notifications.forEach(n => n.from = n.from.filter(id => id !== editor.id));
+      editor.id = state.currentUserId;
+      saveAndRefresh();
+      renderEditor();
+      toast("User deleted");
+    }
+    function createPostFromForm() {
+      const p = { id: `p-${Date.now()}`, authorId: state.currentUserId, text: "New post", createdAt: Date.now(), counts: [0,0,0,0], views: 0, media: "", image: "", video: "", quoteId: "", pinned: "", deleted: false };
+      state.posts.unshift(p);
+      editor.id = p.id;
+      saveAndRefresh();
+      renderEditor();
+      toast("Post created");
+    }
+    function savePostFromForm() {
+      const p = selectedPost();
+      if (!p) return createPostFromForm();
+      p.authorId = document.querySelector("#epAuthor").value;
+      p.text = document.querySelector("#epText").value;
+      p.views = Number(document.querySelector("#epViews").value || 0);
+      p.image = document.querySelector("#epImage").value.trim();
+      p.video = document.querySelector("#epVideo").value.trim();
+      p.media = document.querySelector("#epMedia").value.trim();
+      p.quoteId = document.querySelector("#epQuote").value.trim();
+      p.counts = [Number(document.querySelector("#epReplies").value || 0), Number(document.querySelector("#epReposts").value || 0), Number(document.querySelector("#epLikes").value || 0), p.counts?.[3] || 0];
+      p.pinned = document.querySelector("#epPinned").checked ? "pinned" : "";
+      p.deleted = document.querySelector("#epDeleted").checked;
+      saveAndRefresh();
+      renderEditor();
+      toast("Post saved");
+    }
+    function deleteSelectedPost() {
+      state.posts = state.posts.filter(p => p.id !== editor.id);
+      Object.keys(state.comments).forEach(pid => { if (pid === editor.id) delete state.comments[pid]; });
+      editor.id = state.posts[0]?.id || "";
+      saveAndRefresh();
+      renderEditor();
+      toast("Post deleted");
+    }
+    function createNotifFromForm() {
+      const n = notif(`n-${Date.now()}`, "mention", state.currentUserId, "mentioned you", "", Date.now(), true);
+      state.notifications.unshift(n);
+      editor.id = n.id;
+      saveAndRefresh();
+      renderEditor();
+      toast("Notification created");
+    }
+    function saveNotifFromForm() {
+      const n = selectedNotif();
+      if (!n) return createNotifFromForm();
+      n.type = document.querySelector("#enType").value;
+      n.from = [document.querySelector("#enFrom").value];
+      n.postId = document.querySelector("#enPost").value.trim();
+      n.text = document.querySelector("#enText").value.trim();
+      n.unread = document.querySelector("#enUnread").checked;
+      n.createdAt ||= Date.now();
+      saveAndRefresh();
+      renderEditor();
+      toast("Notification saved");
+    }
+    function deleteSelectedNotif() {
+      state.notifications = state.notifications.filter(n => n.id !== editor.id);
+      editor.id = state.notifications[0]?.id || "";
+      saveAndRefresh();
+      renderEditor();
+      toast("Notification deleted");
+    }
+    function createMessageFromForm() {
+      const m = { id: `m-${Date.now()}`, from: state.currentUserId, text: "New message", at: Date.now() };
+      state.messages.unshift(m);
+      editor.id = m.id;
+      saveAndRefresh();
+      renderEditor();
+      toast("Message created");
+    }
+    function saveMessageFromForm() {
+      const m = selectedMessage();
+      if (!m) return createMessageFromForm();
+      m.from = document.querySelector("#emFrom").value;
+      m.text = document.querySelector("#emText").value;
+      m.at ||= Date.now();
+      saveAndRefresh();
+      renderEditor();
+      toast("Message saved");
+    }
+    function deleteSelectedMessage() {
+      state.messages = state.messages.filter(m => m.id !== editor.id);
+      editor.id = state.messages[0]?.id || "";
+      saveAndRefresh();
+      renderEditor();
+      toast("Message deleted");
+    }
+
+    function bindComposer(textId, btnId) {
+      const text = document.querySelector(textId), btn = document.querySelector(btnId);
+      const update = () => { btn.disabled = !text.value.trim(); if (textId === "#modalComposer") document.querySelector("#composeCount").textContent = `${text.value.length} / 280`; };
+      text.addEventListener("input", update);
+      btn.addEventListener("click", () => {
+        const id = textId === "#modalComposer" ? document.querySelector("#composeIdentity").value : "me";
+        const image = textId === "#modalComposer" ? document.querySelector("#composeImage").value.trim() : "";
+        const video = textId === "#modalComposer" ? document.querySelector("#composeVideo").value.trim() : "";
+        publish(text.value, id, image, video);
+        text.value = ""; update();
+      });
+      update();
+    }
+
+    function npcTick() {
+      const ids = Object.keys(state.accounts).filter(id => id !== "me");
+      const id = rand(ids), action = Math.random();
+      if (action < .45) {
+        const p = { id: `p-${Date.now()}`, authorId: id, text: rand(templates[id] || templates.codex), createdAt: Date.now(), counts: randomCounts(), views: Math.floor(Math.random() * 900000) + 20000, media: Math.random() < .18 ? `${account(id).topics[0].toUpperCase()}\nUPDATE` : "", image: "", video: "", quoteId: "", pinned: "" };
+        state.posts.unshift(p);
+        notify("mention", id, `${account(id).name} posted`, p.id, true);
+      } else if (action < .7) {
+        const p = rand(state.posts.filter(x => !x.deleted));
+        state.comments[p.id] ||= [];
+        state.comments[p.id].unshift(comment(`c-${Date.now()}`, id, rand(templates[id] || templates.codex), p.id));
+        notify("reply", id, `replied to ${p.authorId === "me" ? "your post" : "a hot post"}`, p.id, true);
+      } else if (action < .88) {
+        const mine = state.posts.find(p => p.authorId === "me" && !p.deleted);
+        if (mine) { mine.counts[2] += 1; notify("like", id, "liked your post", mine.id, true); }
+      } else {
+        if (!isFollowing(id)) { state.follows.me.push(id); notify("follow", id, "followed you", "", true); }
+      }
+      state.lastNpcAt = Date.now(); save(); refreshCurrent();
+    }
+
+    document.querySelectorAll(".nav-btn").forEach(b => b.addEventListener("click", () => {
+      showView(b.dataset.view);
+    }));
+    document.querySelector("#topAvatar").onclick = openDrawer;
+    document.querySelector("#editModeBtn").addEventListener("click", openEditMode);
+    document.querySelectorAll("[data-editor-tab]").forEach(b => b.addEventListener("click", () => { editor.tab = b.dataset.editorTab; editor.id = ""; renderEditor(); }));
+    document.querySelector("#editorSave").addEventListener("click", () => {
+      if (editor.tab === "users") return saveUserFromForm();
+      if (editor.tab === "posts") return savePostFromForm();
+      if (editor.tab === "notifications") return saveNotifFromForm();
+      return saveMessageFromForm();
+    });
+    document.querySelector("#backBtn")?.addEventListener("click", () => showView("homeView"));
+    document.querySelector("#floatPost").addEventListener("click", () => {
+      if (document.querySelector(".view.active")?.id === "messagesView") {
+        openSheet("新建聊天", [
+          { id: "encrypted", label: "开始端到端加密聊天", run: () => toast("聊天创建器打开") },
+          { id: "group", label: "新建群组", run: () => toast("群组创建器打开") }
+        ]);
+        return;
+      }
+      openModal("composeModal");
+    });
+    document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModals));
+    document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m) closeModals(); }));
+    document.querySelector("#sideDrawer").addEventListener("click", e => { if (e.target.id === "sideDrawer") e.currentTarget.classList.remove("open"); });
+    document.querySelectorAll("[data-home-tab]").forEach(b => b.addEventListener("click", () => { state.homeTab = b.dataset.homeTab; document.querySelectorAll("[data-home-tab]").forEach(x => x.classList.toggle("active", x === b)); renderHome(); }));
+    document.querySelectorAll("[data-notif-tab]").forEach(b => b.addEventListener("click", () => { document.querySelectorAll("[data-notif-tab]").forEach(x => x.classList.toggle("active", x === b)); renderNotifications(b.dataset.notifTab); }));
+    document.querySelectorAll("[data-explore-tab]").forEach(b => b.addEventListener("click", () => { state.exploreTab = b.dataset.exploreTab; document.querySelectorAll("[data-explore-tab]").forEach(x => x.classList.toggle("active", x === b)); renderExplore(); }));
+    document.querySelectorAll("[data-search-tab]").forEach(b => b.addEventListener("click", () => { state.searchTab = b.dataset.searchTab; document.querySelectorAll("[data-search-tab]").forEach(x => x.classList.toggle("active", x === b)); renderExplore(); }));
+    document.querySelector("#exploreSearch").addEventListener("input", renderExplore);
+    document.querySelector("#messageSearch").addEventListener("input", e => renderMessages(e.target.value));
+    document.querySelector("#saveProfile").addEventListener("click", () => {
+      const a = me(), handle = document.querySelector("#editHandle").value.trim().replace(/^@/, "");
+      a.name = document.querySelector("#editName").value.trim() || a.name;
+      a.handle = `@${handle || "elonmusk"}`;
+      a.bio = document.querySelector("#editBio").value.trim() || a.bio;
+      a.location = document.querySelector("#editLocation").value.trim() || a.location;
+      a.website = document.querySelector("#editLink").value.trim() || a.website;
+      save(); renderProfile("me"); renderHome(); closeModals(); toast("Profile saved");
+    });
+    document.querySelector("#editAvatar").addEventListener("change", e => {
+      const file = e.target.files?.[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => { me().avatar = reader.result; save(); renderProfile("me"); renderHome(); toast("Avatar updated"); };
+      reader.readAsDataURL(file);
+    });
+    document.querySelector("#grokSend").addEventListener("click", () => {
+      const input = document.querySelector("#grokInput"), value = input.value.trim(); if (!value) return;
+      const replies = ["The hot score says drama beats chronology.", "A fake X with real state bugs is still more honest than most timelines.", "NPCs are currently generating engagement. Please hydrate.", "Try posting as Jensen. The GPU discourse is overpowered."];
+      document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble me">${esc(value)}</div><div class="bubble">${esc(rand(replies))}</div>`);
+      input.value = "";
+    });
+
+    bindComposer("#homeComposer", "#homePost");
+    bindComposer("#modalComposer", "#modalPost");
+    fillIdentitySelect();
+    renderHome(); renderMessages(); renderProfile(); renderNotifications(); renderExplore();
+    setInterval(npcTick, 18000);
+  </script>
+</body>
+</html>
