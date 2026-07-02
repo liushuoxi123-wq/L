@@ -529,6 +529,24 @@
       outline: 0;
       padding: 10px 14px;
     }
+    .paywall {
+      border: 1px solid rgba(29,155,240,.55);
+      background:
+        radial-gradient(circle at top right, rgba(29,155,240,.18), transparent 38%),
+        var(--soft);
+    }
+    .money-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #536471;
+      border-radius: 999px;
+      padding: 4px 9px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 900;
+      margin-top: 8px;
+    }
 
     .modal {
       position: fixed;
@@ -1252,10 +1270,10 @@
 
       <section class="view" id="grokView">
         <div class="grok-log" id="grokLog">
-          <div class="bubble">I’m Grok-ish. Ask me what the timeline is yelling about today.</div>
+          <div class="bubble">I’m DEEPSICK. Ask me what the timeline is yelling about today.</div>
         </div>
         <div class="grok-box">
-          <input id="grokInput" placeholder="Ask Grok">
+          <input id="grokInput" placeholder="Ask DEEPSICK">
           <button class="post-btn" id="grokSend">Send</button>
         </div>
         <div class="site-footer">This is an independent demo project. All content is fictional and for demonstration purposes only. <button data-about-link>About L</button></div>
@@ -1290,7 +1308,7 @@
     <nav class="bottom-nav">
       <button class="nav-btn active" data-view="homeView" aria-label="Home"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10.5V20h13v-9.5"></path></svg></button>
       <button class="nav-btn" data-view="exploreView" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button>
-      <button class="nav-btn" data-view="grokView" aria-label="Grok"><span class="nav-grok"></span></button>
+      <button class="nav-btn" data-view="grokView" aria-label="DEEPSICK"><span class="nav-grok"></span></button>
       <button class="nav-btn" data-view="notificationsView" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 8.5h18C21 16 18 16 18 9Z"></path><path d="M9.5 20a2.8 2.8 0 0 0 5 0"></path></svg></button>
       <button class="nav-btn" data-view="messagesView" aria-label="Messages"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v11.5H8l-4 3v-14.5Z"></path></svg></button>
     </nav>
@@ -1406,7 +1424,7 @@
     };
 
     const npcSeed = {
-      me: { id: "me", name: "Elon Musk", handle: "@elonmusk", avatar: img.me, banner: "", bio: "Creating the future of humanity: rockets, electric cars, AI, and making life multiplanetary.", location: "Mars Factory", website: "x.com/elonmusk", joinDate: "Joined June 2009", verified: true, xBadge: true, followers: 128400000, following: 812, personality: "chaotic", speakingStyle: "short, meme-like", topics: ["Mars", "AI", "cars"], postFrequency: 1 },
+      me: { id: "me", name: "Elon Musk", handle: "@elonmusk", avatar: img.me, banner: "", bio: "Creating the future of humanity: rockets, electric cars, AI, and making life multiplanetary.", location: "Mars Factory", website: "x.com/elonmusk", joinDate: "Joined June 2009", verified: true, xBadge: true, followers: 128400000, following: 812, lmoney: 600, deepSickPremium: false, personality: "chaotic", speakingStyle: "short, meme-like", topics: ["Mars", "AI", "cars"], postFrequency: 1 },
       sam: { id: "sam", name: "Sam Altman", handle: "@sama", avatar: img.sam, banner: "", bio: "working on ai, products, and long arcs", location: "San Francisco", website: "openai.com", joinDate: "Joined Dec 2006", verified: true, followers: 3200000, following: 1220, personality: "calm", speakingStyle: "lowercase thoughtful", topics: ["AI", "safety", "products"], postFrequency: 2 },
       openai: { id: "openai", name: "OpenAI News", handle: "@openai_market", avatar: "", initial: "AI", color: "linear-gradient(135deg,#1d9bf0,#00ba7c)", banner: "", bio: "Breaking updates from the AI timeline.", location: "Internet", website: "openai.com", joinDate: "Joined Jan 2023", verified: true, followers: 920000, following: 55, personality: "journalistic", speakingStyle: "breaking news", topics: ["OpenAI", "AI"], postFrequency: 3 },
       codex: { id: "codex", name: "Codex", handle: "@codex", avatar: img.codex, banner: "", bio: "shipping code, fixing bugs, narrating the stack trace.", location: "Terminal", website: "codex.local", joinDate: "Joined Jun 2026", verified: true, followers: 880000, following: 404, personality: "programmer", speakingStyle: "debugging and shipping", topics: ["code", "bugs"], postFrequency: 2 },
@@ -1445,7 +1463,7 @@
     function seedState() {
       const ids = Object.keys(npcSeed);
       const posts = [
-        post("p0", "me", "good! shipping the fake X mobile simulator. comments, notifications, NPCs, and Grok-ish mode are live.", -2, [2400, 9800, 88000, 3100], "", "", "pinned"),
+        post("p0", "me", "good! shipping the fake X mobile simulator. comments, notifications, NPCs, and DEEPSICK mode are live.", -2, [2400, 9800, 88000, 3100], "", "", "pinned"),
         post("p1", "sam", templates.sam[0], -4, [5421, 18000, 144000, 8100], "", "", "pinned"),
         post("p2", "codex", templates.codex[0], -12, [893, 7600, 62000, 2400]),
         post("p3", "trump", templates.trump[0], -21, [24000, 88000, 420000, 19000]),
@@ -1504,10 +1522,17 @@
           saved.accounts = { ...structuredClone(npcSeed), ...saved.accounts };
           saved.translations ||= {};
           saved.currentProfileId ||= "me";
-          return saved;
+          return normalizeState(saved);
         }
-        return seedState();
-      } catch { return seedState(); }
+        return normalizeState(seedState());
+      } catch { return normalizeState(seedState()); }
+    }
+    function normalizeState(next) {
+      Object.values(next.accounts || {}).forEach(a => {
+        a.lmoney ??= a.id === "me" ? 600 : 0;
+        a.deepSickPremium ??= false;
+      });
+      return next;
     }
     function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
     function saveAndRefresh() { save(); fillIdentitySelect(); refreshCurrent(); }
@@ -1540,20 +1565,20 @@
       if (!open) return `<button class="translate-link" data-translate="${esc(p.id)}">Translate post</button>`;
       const source = /[\u3400-\u9fff]/.test(p.text) ? "Chinese" : "English";
       return `<div class="translation-card">
-        <div class="translation-meta">◌ Translated from ${source} by Grok · <button class="translate-link" data-translate="${esc(p.id)}">Show original</button></div>
+        <div class="translation-meta">◌ Translated from ${source} by DEEPSICK · <button class="translate-link" data-translate="${esc(p.id)}">Show original</button></div>
         <div>${esc(fakeTranslate(p.text, source))}</div>
         <div class="translation-rate"><span>Rate this translation:</span><button data-translation-rate="up">♡</button><button data-translation-rate="down">♡</button></div>
       </div>`;
     }
     function fakeTranslate(text, source) {
-      if (source === "Chinese") return "A translated English version of this post appears here, powered by Grok in the simulator.";
+      if (source === "Chinese") return "A translated English version of this post appears here, powered by DEEPSICK in the simulator.";
       const lower = text.toLowerCase();
       if (lower.includes("mars")) return "火星需要更好的基础设施。人类未来会是多行星的。";
       if (lower.includes("ai")) return "人工智能正在重塑产品、计算和人类工作的方式。";
       if (lower.includes("future")) return "人类的未来将由拒绝等待许可的人创造。";
       if (lower.includes("openai")) return "OpenAI 的传闻正在成为时间线上的焦点。";
       if (lower.includes("gpu")) return "GPU 和加速计算正在成为现代 AI 工厂的核心引擎。";
-      return "这是一条由 Grok 模拟翻译的中文译文，保留原帖语气和主要含义。";
+      return "这是一条由 DEEPSICK 模拟翻译的中文译文，保留原帖语气和主要含义。";
     }
     function quoteHtml(p) {
       const q = state.posts.find(x => x.id === p.quoteId);
@@ -1634,6 +1659,7 @@
           <div class="handle">${esc(a.handle)}</div>
           <p class="bio">${esc(a.bio)}</p>
           <div class="muted">⌖ ${esc(a.location)} &nbsp; 🔗 ${esc(a.website)} &nbsp; 📅 ${esc(a.joinDate)}</div>
+          <div class="money-pill">Lmoney $${fmt(a.lmoney || 0)}${a.deepSickPremium ? " · DEEPSICK Member" : ""}</div>
           <p><strong>${fmt(a.following)}</strong> <span class="muted">Following</span> &nbsp; <strong>${fmt(a.followers)}</strong> <span class="muted">Followers</span></p>
           <div class="mutuals"><span class="mini-stack">${["sam","codex","openai"].map(x => avatar(account(x))).join("")}</span> Followed by Sam Altman, Codex and OpenAI News</div>
         </div>
@@ -1712,7 +1738,7 @@
       { title: "Morocco", rank: "4", category: "加拿大 的趋势", related: "World Cup、Atlas Lions", count: "47K posts" },
       { title: "LeBron", rank: "5", category: "加拿大 的趋势", related: "Lakers", count: "302K posts" },
       { title: "OpenAI IPO", rank: "6", category: "科技 趋势", related: "Sam Altman、Codex、AI stocks", count: "128K posts" },
-      { title: "Grok", rank: "7", category: "X 趋势", related: "AI、voice mode、image tools", count: "84K posts" }
+      { title: "DEEPSICK", rank: "7", category: "L 趋势", related: "AI、voice mode、image tools", count: "84K posts" }
     ];
 
     function renderExplore() {
@@ -1900,7 +1926,7 @@
         return;
       }
 
-      title.textContent = id === "homeView" ? "𝕏" : id === "notificationsView" ? "通知" : id === "grokView" ? "Grok" : "Post";
+      title.textContent = id === "homeView" ? "𝕏" : id === "notificationsView" ? "通知" : id === "grokView" ? "DEEPSICK" : "Post";
     }
 
     function openMessageFilter() {
@@ -1989,7 +2015,7 @@
     }
 
     function openDisplaySettings() {
-      openSheet("X settings", [
+      openSheet("L settings", [
         { id: "display", label: "Display", meta: "Dark mode", run: () => toast("Already in dark mode") },
         { id: "account", label: "Your account", run: () => { state.currentProfileId = "me"; showView("profileView"); } },
         { id: "privacy", label: "Privacy and safety", run: () => toast("Privacy settings opened") },
@@ -2005,6 +2031,7 @@
           ${avatar(a)}
           <div><strong style="font-size:24px">${esc(a.name)}</strong> ${demoBadge()} ${badge(a)}<div class="handle">${esc(a.handle)}</div></div>
           <div><strong>${fmt(a.following)}</strong> <span class="muted">正在关注</span> &nbsp; <strong>${fmt(a.followers)}</strong> <span class="muted">关注者</span></div>
+          <div class="money-pill">Lmoney $${fmt(a.lmoney || 0)}${a.deepSickPremium ? " · DEEPSICK Member" : ""}</div>
         </div>
         <button class="drawer-item" data-drawer-view="profileView">♙ 个人资料</button>
         <button class="drawer-item" data-drawer-action="premium">✦ Premium</button>
@@ -2014,7 +2041,7 @@
         <button class="drawer-item" data-drawer-action="spaces">◉ 空间</button>
         <button class="drawer-item" data-drawer-action="creator">♢ 创作者工作室</button>
         <div class="drawer-sep"></div>
-        <button class="drawer-item" data-drawer-view="grokView">◌ 下载 Grok</button>
+        <button class="drawer-item" data-drawer-view="grokView">◌ DEEPSICK</button>
         <button class="drawer-item" data-drawer-view="aboutView">ⓘ About L</button>
         <button class="drawer-item" data-drawer-action="settings">⚙ 设置和隐私</button>
         <button class="drawer-item" data-drawer-action="help">？ 帮助中心</button>`;
@@ -2168,8 +2195,9 @@
           ${editorFormField("Join date", "euJoin", a.joinDate)}
           ${editorFormField("Following", "euFollowing", a.following, false, "number")}
           ${editorFormField("Followers", "euFollowers", a.followers, false, "number")}
+          ${editorFormField("Lmoney", "euLmoney", a.lmoney || 0, false, "number")}
         </div>
-        <div class="editor-checks"><label><input id="euVerified" type="checkbox" ${a.verified ? "checked" : ""}> Verified</label><label><input id="euXBadge" type="checkbox" ${a.xBadge ? "checked" : ""}> X badge</label></div>
+        <div class="editor-checks"><label><input id="euVerified" type="checkbox" ${a.verified ? "checked" : ""}> Verified</label><label><input id="euXBadge" type="checkbox" ${a.xBadge ? "checked" : ""}> X badge</label><label><input id="euDeepSick" type="checkbox" ${a.deepSickPremium ? "checked" : ""}> DEEPSICK member</label></div>
       </div>`;
       document.querySelector("#editorUserSelect").onchange = e => { editor.id = e.target.value; state.currentUserId = editor.id; state.currentProfileId = editor.id; saveAndRefresh(); renderEditor(); };
       document.querySelector("#editorNewUser").onclick = createUserFromForm;
@@ -2257,7 +2285,7 @@
       toast("User created");
     }
     function editorNewUserBase(id) {
-      return { id, avatar: "", banner: "", bio: "", location: "", website: "", joinDate: "Joined July 2026", verified: false, xBadge: false, followers: 0, following: 0, initial: "N", color: "linear-gradient(135deg,#1d9bf0,#7856ff)", personality: "", speakingStyle: "", topics: [], postFrequency: 1 };
+      return { id, avatar: "", banner: "", bio: "", location: "", website: "", joinDate: "Joined July 2026", verified: false, xBadge: false, followers: 0, following: 0, lmoney: 600, deepSickPremium: false, initial: "N", color: "linear-gradient(135deg,#1d9bf0,#7856ff)", personality: "", speakingStyle: "", topics: [], postFrequency: 1 };
     }
     function saveUserFromForm() {
       const oldId = editor.id;
@@ -2274,6 +2302,8 @@
         joinDate: document.querySelector("#euJoin").value.trim(),
         following: Number(document.querySelector("#euFollowing").value || 0),
         followers: Number(document.querySelector("#euFollowers").value || 0),
+        lmoney: Number(document.querySelector("#euLmoney").value || 0),
+        deepSickPremium: document.querySelector("#euDeepSick").checked,
         verified: document.querySelector("#euVerified").checked,
         xBadge: document.querySelector("#euXBadge").checked
       };
@@ -2479,9 +2509,28 @@
     });
     document.querySelector("#grokSend").addEventListener("click", () => {
       const input = document.querySelector("#grokInput"), value = input.value.trim(); if (!value) return;
-      const replies = ["The hot score says drama beats chronology.", "A fake X with real state bugs is still more honest than most timelines.", "NPCs are currently generating engagement. Please hydrate.", "Try posting as Jensen. The GPU discourse is overpowered."];
-      document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble me">${esc(value)}</div><div class="bubble">${esc(rand(replies))}</div>`);
+      const a = me();
+      document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble me">${esc(value)}</div>`);
+      if (!a.deepSickPremium) {
+        document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble paywall"><strong>DEEPSICK Membership required</strong><br>Unlock DEEPSICK replies for $500. Your Lmoney balance is $${fmt(a.lmoney || 0)}.<br><button class="post-btn" data-buy-deepsick style="margin-top:10px">Subscribe for $500</button></div>`);
+        input.value = "";
+        return;
+      }
+      const replies = ["The hot score says drama beats chronology.", "A fake L with real state bugs is still more honest than most timelines.", "NPCs are currently generating engagement. Please hydrate.", "Try posting as Jensen. The GPU discourse is overpowered."];
+      document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble">${esc(rand(replies))}</div>`);
       input.value = "";
+    });
+    document.querySelector("#grokLog").addEventListener("click", e => {
+      if (!e.target.closest("[data-buy-deepsick]")) return;
+      const a = me();
+      if (a.deepSickPremium) return toast("DEEPSICK already active");
+      if ((a.lmoney || 0) < 500) return toast("Not enough Lmoney");
+      a.lmoney -= 500;
+      a.deepSickPremium = true;
+      save();
+      renderProfile(state.currentProfileId);
+      toast("DEEPSICK membership activated");
+      document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble">Membership activated. Lmoney balance: $${fmt(a.lmoney)}. Ask me again.</div>`);
     });
 
     bindComposer("#homeComposer", "#homePost");
