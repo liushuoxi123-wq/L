@@ -1532,6 +1532,9 @@
         a.lmoney ??= a.id === "me" ? 600 : 0;
         a.deepSickPremium ??= false;
       });
+      Object.keys(next.translations || {}).forEach(id => {
+        if (typeof next.translations[id] !== "object") delete next.translations[id];
+      });
       return next;
     }
     function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
@@ -1560,25 +1563,39 @@
       return image + video + fake;
     }
     function translationHtml(p) {
-      if (!p.text || p.text.length < 8) return "";
-      const open = !!state.translations[p.id];
-      if (!open) return `<button class="translate-link" data-translate="${esc(p.id)}">Translate post</button>`;
-      const source = /[\u3400-\u9fff]/.test(p.text) ? "Chinese" : "English";
+      if (!p.text) return "";
+      const item = state.translations[p.id];
+      if (!item) return `<button class="translate-link" data-translate="${esc(p.id)}">Translate</button>`;
+      if (item.status === "loading") return `<button class="translate-link" data-translate="${esc(p.id)}">Translating...</button>`;
+      if (item.status === "failed") return `<button class="translate-link" data-translate="${esc(p.id)}">Translate</button><div class="translation-card">Translation failed</div>`;
+      const target = item.target || userLanguage();
       return `<div class="translation-card">
-        <div class="translation-meta">◌ Translated from ${source} by DEEPSICK · <button class="translate-link" data-translate="${esc(p.id)}">Show original</button></div>
-        <div>${esc(fakeTranslate(p.text, source))}</div>
+        <div class="translation-meta">◌ Translated to ${esc(target)} by MyMemory · <button class="translate-link" data-translate="${esc(p.id)}">Hide translation</button></div>
+        <div>${esc(item.text || "Translation failed")}</div>
         <div class="translation-rate"><span>Rate this translation:</span><button data-translation-rate="up">♡</button><button data-translation-rate="down">♡</button></div>
       </div>`;
     }
-    function fakeTranslate(text, source) {
-      if (source === "Chinese") return "A translated English version of this post appears here, powered by DEEPSICK in the simulator.";
-      const lower = text.toLowerCase();
-      if (lower.includes("mars")) return "火星需要更好的基础设施。人类未来会是多行星的。";
-      if (lower.includes("ai")) return "人工智能正在重塑产品、计算和人类工作的方式。";
-      if (lower.includes("future")) return "人类的未来将由拒绝等待许可的人创造。";
-      if (lower.includes("openai")) return "OpenAI 的传闻正在成为时间线上的焦点。";
-      if (lower.includes("gpu")) return "GPU 和加速计算正在成为现代 AI 工厂的核心引擎。";
-      return "这是一条由 DEEPSICK 模拟翻译的中文译文，保留原帖语气和主要含义。";
+    function userLanguage() {
+      const lang = (navigator.language || "zh-CN").toLowerCase();
+      if (lang.startsWith("zh")) return "zh-CN";
+      return localStorage.getItem("l-translation-language") || "zh-CN";
+    }
+    function sourceLanguage(text, target) {
+      if (/[\u3400-\u9fff]/.test(text)) return "zh-CN";
+      if (/[\u3040-\u30ff]/.test(text)) return "ja";
+      if (/[\u0400-\u04ff]/.test(text)) return "ru";
+      return "en";
+    }
+    async function requestTranslation(text, target) {
+      const source = sourceLanguage(text, target);
+      if (source === target) return text;
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 480))}&langpair=${encodeURIComponent(`${source}|${target}`)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Translation failed");
+      const data = await res.json();
+      const translated = data?.responseData?.translatedText;
+      if (!translated || data?.responseStatus >= 400) throw new Error("Translation failed");
+      return translated;
     }
     function quoteHtml(p) {
       const q = state.posts.find(x => x.id === p.quoteId);
@@ -2090,8 +2107,26 @@
       if (!on && p?.authorId === "me") notify("repost", "codex", "reposted your post", id, true);
       save(); refreshCurrent();
     }
-    function toggleTranslate(id) {
-      state.translations[id] = !state.translations[id];
+    async function toggleTranslate(id) {
+      const p = state.posts.find(x => x.id === id);
+      if (!p?.text) return;
+      const existing = state.translations[id];
+      if (existing?.status === "success") {
+        delete state.translations[id];
+        save();
+        refreshCurrent();
+        return;
+      }
+      state.translations[id] = { status: "loading", text: "", target: userLanguage() };
+      save();
+      refreshCurrent();
+      try {
+        const target = userLanguage();
+        const translated = await requestTranslation(p.text, target);
+        state.translations[id] = { status: "success", text: translated, target };
+      } catch {
+        state.translations[id] = { status: "failed", text: "Translation failed", target: userLanguage() };
+      }
       save();
       refreshCurrent();
     }
