@@ -511,6 +511,10 @@
       background: var(--accent);
       color: #fff;
     }
+    .bubble.loading {
+      color: var(--muted);
+      font-style: italic;
+    }
     .grok-box {
       position: sticky;
       bottom: 68px;
@@ -1269,9 +1273,7 @@
       </section>
 
       <section class="view" id="grokView">
-        <div class="grok-log" id="grokLog">
-          <div class="bubble">I’m DEEPSICK. Ask me what the timeline is yelling about today.</div>
-        </div>
+        <div class="grok-log" id="grokLog"></div>
         <div class="grok-box">
           <input id="grokInput" placeholder="Ask DEEPSICK">
           <button class="post-btn" id="grokSend">Send</button>
@@ -1497,6 +1499,9 @@
         searchTab: "top",
         currentProfileId: "me",
         translations: {},
+        deepSickMessages: [
+          { role: "assistant", content: "I’m DEEPSICK. Ask me what the timeline is yelling about today." }
+        ],
         messages: ids.filter(id => id !== "me").slice(0, 8).map((id, i) => ({ id: `m${i}`, from: id, text: `${npcSeed[id].name} sent a timeline take about ${npcSeed[id].topics[0]}.`, at: now - i * 3600000 })),
         lastNpcAt: now
       };
@@ -1535,6 +1540,9 @@
       Object.keys(next.translations || {}).forEach(id => {
         if (typeof next.translations[id] !== "object") delete next.translations[id];
       });
+      next.deepSickMessages ||= [
+        { role: "assistant", content: "I’m DEEPSICK. Ask me what the timeline is yelling about today." }
+      ];
       return next;
     }
     function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
@@ -1849,6 +1857,77 @@
         </div>
       </div>`;
     }
+    function renderGrok() {
+      const log = document.querySelector("#grokLog");
+      log.innerHTML = (state.deepSickMessages || []).map(m => `<div class="bubble ${m.role === "user" ? "me" : ""}">${esc(m.content)}</div>`).join("");
+      if (document.querySelector("#grokView")?.classList.contains("active")) scrollGrokToBottom();
+    }
+    function scrollGrokToBottom() {
+      requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
+    }
+    function deepSickPayload() {
+      const recent = (state.deepSickMessages || []).slice(-12).map(m => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: m.content
+      }));
+      return [
+        { role: "system", content: "You are DEEPSICK, a concise AI assistant inside a fictional social media demo called L. Be helpful, playful, and brief. Do not claim to be a real X, xAI, OpenAI, SpaceX, or Tesla product." },
+        ...recent
+      ];
+    }
+    async function fetchDeepSick(onDelta) {
+      const body = {
+        model: "openai-fast",
+        messages: deepSickPayload(),
+        stream: true
+      };
+      const res = await fetch("https://text.pollinations.ai/openai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error("DEEPSICK is unavailable.");
+      if (!res.body) return fetchDeepSickNormal();
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let full = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith("data:")) continue;
+          const data = trimmed.slice(5).trim();
+          if (!data || data === "[DONE]") continue;
+          try {
+            const json = JSON.parse(data);
+            const delta = json.choices?.[0]?.delta?.content || "";
+            if (delta) {
+              full += delta;
+              onDelta(full);
+            }
+          } catch {}
+        }
+      }
+      return full || fetchDeepSickNormal();
+    }
+    async function fetchDeepSickNormal() {
+      const res = await fetch("https://text.pollinations.ai/openai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "openai-fast", messages: deepSickPayload(), stream: false })
+      });
+      if (!res.ok) throw new Error("DEEPSICK is unavailable.");
+      const data = await res.json();
+      const content = data?.choices?.[0]?.message?.content;
+      if (!content) throw new Error("DEEPSICK returned an empty response.");
+      return content;
+    }
 
     function publish(text, identity = "me", image = "", video = "") {
       const value = text.trim();
@@ -1876,7 +1955,8 @@
       if (id === "notificationsView") renderNotifications();
       if (id === "messagesView") renderMessages(document.querySelector("#messageSearch").value);
       if (id === "profileView") renderProfile(state.currentProfileId);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (id === "grokView") renderGrok();
+      if (id !== "grokView") window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function setTopbar(id, searchFocused = false) {
@@ -2542,36 +2622,49 @@
       reader.onload = () => { me().avatar = reader.result; save(); renderProfile("me"); renderHome(); toast("Avatar updated"); };
       reader.readAsDataURL(file);
     });
-    document.querySelector("#grokSend").addEventListener("click", () => {
-      const input = document.querySelector("#grokInput"), value = input.value.trim(); if (!value) return;
-      const a = me();
-      document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble me">${esc(value)}</div>`);
-      if (!a.deepSickPremium) {
-        document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble paywall"><strong>DEEPSICK Membership required</strong><br>Unlock DEEPSICK replies for $500. Your Lmoney balance is $${fmt(a.lmoney || 0)}.<br><button class="post-btn" data-buy-deepsick style="margin-top:10px">Subscribe for $500</button></div>`);
-        input.value = "";
-        return;
-      }
-      const replies = ["The hot score says drama beats chronology.", "A fake L with real state bugs is still more honest than most timelines.", "NPCs are currently generating engagement. Please hydrate.", "Try posting as Jensen. The GPU discourse is overpowered."];
-      document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble">${esc(rand(replies))}</div>`);
+    async function sendDeepSickMessage() {
+      const input = document.querySelector("#grokInput");
+      const btn = document.querySelector("#grokSend");
+      const value = input.value.trim();
+      if (!value || btn.disabled) return;
+      state.deepSickMessages.push({ role: "user", content: value });
       input.value = "";
-    });
-    document.querySelector("#grokLog").addEventListener("click", e => {
-      if (!e.target.closest("[data-buy-deepsick]")) return;
-      const a = me();
-      if (a.deepSickPremium) return toast("DEEPSICK already active");
-      if ((a.lmoney || 0) < 500) return toast("Not enough Lmoney");
-      a.lmoney -= 500;
-      a.deepSickPremium = true;
-      save();
-      renderProfile(state.currentProfileId);
-      toast("DEEPSICK membership activated");
-      document.querySelector("#grokLog").insertAdjacentHTML("beforeend", `<div class="bubble">Membership activated. Lmoney balance: $${fmt(a.lmoney)}. Ask me again.</div>`);
+      btn.disabled = true;
+      renderGrok();
+      const log = document.querySelector("#grokLog");
+      log.insertAdjacentHTML("beforeend", `<div class="bubble loading" id="deepSickLoading">DEEPSICK is thinking...</div>`);
+      scrollGrokToBottom();
+      try {
+        let liveText = "";
+        const loading = document.querySelector("#deepSickLoading");
+        const finalText = await fetchDeepSick(text => {
+          liveText = text;
+          if (loading) loading.textContent = text || "DEEPSICK is thinking...";
+          scrollGrokToBottom();
+        });
+        const response = (finalText || liveText || "").trim();
+        if (!response) throw new Error("Empty response");
+        state.deepSickMessages.push({ role: "assistant", content: response });
+      } catch {
+        state.deepSickMessages.push({ role: "assistant", content: "DEEPSICK is unavailable right now. Please try again later." });
+      } finally {
+        btn.disabled = false;
+        save();
+        renderGrok();
+      }
+    }
+    document.querySelector("#grokSend").addEventListener("click", sendDeepSickMessage);
+    document.querySelector("#grokInput").addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendDeepSickMessage();
+      }
     });
 
     bindComposer("#homeComposer", "#homePost");
     bindComposer("#modalComposer", "#modalPost");
     fillIdentitySelect();
-    renderHome(); renderMessages(); renderProfile(); renderNotifications(); renderExplore(); showDisclaimerIfNeeded();
+    renderHome(); renderMessages(); renderProfile(); renderNotifications(); renderExplore(); renderGrok(); showDisclaimerIfNeeded();
     setInterval(npcTick, 18000);
   </script>
 </body>
